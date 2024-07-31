@@ -20,6 +20,7 @@ require('lazy').setup {
   require 'plugins.treesitter',
   require 'plugins.vim-sleuth',
   require 'plugins.which-key',
+  require 'plugins.vim-slime',
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

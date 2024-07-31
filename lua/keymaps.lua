@@ -36,8 +36,7 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('n', '<leader>ot', ':split | terminal<CR>', { desc = '[O]pen a [T]erminal window' })
 vim.keymap.set('n', '<leader>oh', ':split<CR>', { desc = '[O]pen a [H]orizontal window' })
 vim.keymap.set('n', '<leader>ov', ':vsplit<CR>', { desc = '[O]pen a [V]ertical window' })
-vim.keymap.set('n', '<leader>op', ':split | terminal python3<CR>', { desc = '[O]pen a Terminal window and start [P]ython3' })
-vim.keymap.set('n', '<leader>c', ':close<CR>', { desc = '[C]lose the current window' })
+vim.keymap.set('n', '<leader>cw', ':close<CR>', { desc = '[C]lose the current [W]indow' })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
