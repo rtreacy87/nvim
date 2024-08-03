@@ -37,6 +37,9 @@ vim.keymap.set('n', '<leader>ot', ':split | terminal<CR>', { desc = '[O]pen a [T
 vim.keymap.set('n', '<leader>oh', ':split<CR>', { desc = '[O]pen a [H]orizontal window' })
 vim.keymap.set('n', '<leader>ov', ':vsplit<CR>', { desc = '[O]pen a [V]ertical window' })
 vim.keymap.set('n', '<leader>cw', ':close<CR>', { desc = '[C]lose the current [W]indow' })
+
+vim.keymap.set('n', '<leader>om', ':MarkdownPreview<CR>', { desc = '[O]pen [M]arkdown Preview' })
+vim.keymap.set('n', '<leader>cm', ':MarkdownPreviewStop<CR>', { desc = '[C]lose [Markdown Preview' })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
