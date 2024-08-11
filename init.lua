@@ -23,6 +23,7 @@ require('lazy').setup {
   require 'plugins.vim-slime',
   require 'plugins.markdown-preview',
   require 'plugins.nvim-jqx',
+  require 'plugins.tmux-vim',
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
