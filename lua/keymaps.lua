@@ -42,6 +42,8 @@ vim.keymap.set('n', '<leader>cw', ':close<CR>', { desc = '[C]lose the current [W
 
 vim.keymap.set('n', '<leader>om', ':MarkdownPreview<CR>', { desc = '[O]pen [M]arkdown Preview' })
 vim.keymap.set('n', '<leader>cm', ':MarkdownPreviewStop<CR>', { desc = '[C]lose [Markdown Preview' })
+
+vim.keymap.set('n', '<leader>tm', ':TableModeToggle<CR>', { desc = '[T]able [M]ode toggle' })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 

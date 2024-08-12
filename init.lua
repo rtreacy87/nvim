@@ -24,6 +24,7 @@ require('lazy').setup {
   require 'plugins.markdown-preview',
   require 'plugins.nvim-jqx',
   require 'plugins.tmux-vim',
+  require 'plugins.table-mode',
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
