@@ -6,26 +6,28 @@ require 'options'
 require 'keymaps'
 require 'lazy-install'
 
-require('lazy').setup {
-  require 'plugins.tokyonight',
-  require 'plugins.neo-tree',
-  require 'plugins.comment',
-  require 'plugins.conform',
-  require 'plugins.gitsigns',
-  require 'plugins.mini',
-  require 'plugins.nvim-cmp',
-  require 'plugins.nvim-lspconfig',
-  require 'plugins.telescope',
-  require 'plugins.todo-comments',
-  require 'plugins.treesitter',
-  require 'plugins.vim-sleuth',
-  require 'plugins.which-key',
-  require 'plugins.vim-slime',
-  require 'plugins.markdown-preview',
-  require 'plugins.nvim-jqx',
-  require 'plugins.tmux-vim',
-  require 'plugins.table-mode',
-}
+-- Load all plugins from the lua/plugins directory
+require('lazy').setup('plugins', {
+  ui = {
+    -- If you are using a Nerd Font: set icons to an empty table which will use the
+    -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
+    icons = vim.g.have_nerd_font and {} or {
+      cmd = '⌘',
+      config = '🛠',
+      event = '📅',
+      ft = '📂',
+      init = '⚙',
+      keys = '🗝',
+      plugin = '🔌',
+      runtime = '💻',
+      require = '🌙',
+      source = '📄',
+      start = '🚀',
+      task = '📌',
+      lazy = '💤 ',
+    },
+  },
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

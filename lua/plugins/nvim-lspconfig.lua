@@ -182,11 +182,7 @@ return { -- LSP Configuration & Plugins
           },
         },
       },
-      r_language_server = {
-        cmd = { 'R', '--slave', '-e', 'languageserver::run()' },
-        filetypes = { 'r', 'rmd' },
-        root_dir = require('lspconfig.util').root_pattern('.git', '.'),
-      },
+      -- r_language_server removed as it's not needed
     }
 
     -- Ensure the servers and tools above are installed
