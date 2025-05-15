@@ -77,6 +77,47 @@ return {
       print("Augment workspace set to: " .. path)
     end
     
+    -- Function to add a workspace folder
+    local function add_workspace_folder(path)
+      -- Initialize if nil
+      if not vim.g.augment_workspace_folders then
+        vim.g.augment_workspace_folders = {}
+      end
+      
+      -- Check if folder already exists in the list
+      for _, folder in ipairs(vim.g.augment_workspace_folders) do
+        if folder == path then
+          print("Workspace folder already exists: " .. path)
+          return
+        end
+      end
+      
+      -- Add the new folder
+      table.insert(vim.g.augment_workspace_folders, path)
+      vim.cmd('Augment reload')
+      print("Added workspace folder: " .. path)
+    end
+    
+    -- Function to remove a workspace folder
+    local function remove_workspace_folder(path)
+      if not vim.g.augment_workspace_folders then
+        print("No workspace folders configured")
+        return
+      end
+      
+      -- Find and remove the folder
+      for i, folder in ipairs(vim.g.augment_workspace_folders) do
+        if folder == path then
+          table.remove(vim.g.augment_workspace_folders, i)
+          vim.cmd('Augment reload')
+          print("Removed workspace folder: " .. path)
+          return
+        end
+      end
+      
+      print("Workspace folder not found: " .. path)
+    end
+    
     -- Function to validate directory exists
     local function is_valid_directory(path)
       return path and path ~= '' and vim.fn.isdirectory(path) == 1
@@ -115,7 +156,7 @@ return {
     -- Initialize workspace on startup
     initialize_workspace()
     
-    -- Set up project switching function
+    -- Set up global functions for project management
     _G.SwitchAugmentProject = function(project_path)
       if is_valid_directory(project_path) then
         set_workspace_folder(project_path)
@@ -124,10 +165,30 @@ return {
       end
     end
     
-    -- Create a command to easily call this function
+    _G.AddAugmentFolder = function(project_path)
+      if is_valid_directory(project_path) then
+        add_workspace_folder(project_path)
+      else
+        print("Error: Directory '" .. project_path .. "' does not exist.")
+      end
+    end
+    
+    _G.RemoveAugmentFolder = function(project_path)
+      remove_workspace_folder(project_path)
+    end
+    
+    -- Create commands to easily call these functions
     vim.api.nvim_create_user_command('AugmentProject', 
       function(opts) _G.SwitchAugmentProject(opts.args) end, 
       {nargs = 1, complete = 'dir'})
+      
+    vim.api.nvim_create_user_command('AugmentAddFolder', 
+      function(opts) _G.AddAugmentFolder(opts.args) end, 
+      {nargs = 1, complete = 'dir'})
+      
+    vim.api.nvim_create_user_command('AugmentRemoveFolder', 
+      function(opts) _G.RemoveAugmentFolder(opts.args) end, 
+      {nargs = 1})
   end
 }
 ```
@@ -136,19 +197,39 @@ return {
 
 **1. `set_workspace_folder(path)`**
 - Takes a directory path as input
-- Sets it as the Augment workspace folder
+- Sets it as the Augment workspace folder (replacing any existing folders)
 - Reloads Augment to apply the change
 - Shows a confirmation message
 
 **Purpose:** Centralizes the workspace folder setting logic in one place.
 
-**2. `is_valid_directory(path)`**
+**2. `add_workspace_folder(path)`**
+- Takes a directory path as input
+- Checks if the workspace folders list exists, creates it if not
+- Verifies the folder isn't already in the list
+- Adds the new folder to the existing workspace folders
+- Reloads Augment to apply the change
+- Shows a confirmation message
+
+**Purpose:** Allows adding additional folders to the workspace without replacing existing ones.
+
+**3. `remove_workspace_folder(path)`**
+- Takes a directory path as input
+- Checks if the workspace folders list exists
+- Searches for the specified folder in the list
+- Removes it if found
+- Reloads Augment to apply the change
+- Shows a confirmation message
+
+**Purpose:** Provides a way to remove specific folders from the workspace.
+
+**4. `is_valid_directory(path)`**
 - Checks if a path is not empty and exists as a directory
 - Returns true or false
 
 **Purpose:** Provides a clean way to validate directory paths.
 
-**3. `prompt_for_workspace()`**
+**5. `prompt_for_workspace()`**
 - Shows a prompt for entering a workspace path
 - Uses directory auto-completion
 - Validates the entered path
@@ -157,78 +238,31 @@ return {
 
 **Purpose:** Handles the user interaction for selecting a workspace.
 
-**4. `initialize_workspace()`**
+**6. `initialize_workspace()`**
 - Checks if workspace folders are already set
 - If not, prompts for a workspace path
 - Retries if the user enters an invalid path
 
 **Purpose:** Manages the workspace initialization flow.
 
-**5. `SwitchAugmentProject(project_path)`**
-- Takes a project path as input
-- Validates the path
-- Sets it as the workspace if valid
-- Shows an error if invalid
+**7. Global Functions (`_G.SwitchAugmentProject`, `_G.AddAugmentFolder`, `_G.RemoveAugmentFolder`)**
+- These functions are stored in the global `_G` table so they can be accessed from anywhere
+- Each validates inputs and calls the appropriate local function
+- Using `_G` makes them accessible to the commands we create
 
-**Purpose:** Provides a way to switch projects with validation.
+**Purpose:** Exposes our functionality to Neovim commands.
 
-This approach follows clean code principles by:
-- Breaking down complex logic into smaller, focused functions
-- Giving each function a single responsibility
-- Reducing nesting depth
-- Making the code more readable and maintainable
+**8. Command Creation**
+- Creates three commands: `:AugmentProject`, `:AugmentAddFolder`, and `:AugmentRemoveFolder`
+- Each command calls the corresponding global function
+- Directory completion is enabled where appropriate
 
-With this setup, you'll be prompted to select a workspace folder when you start Neovim, and you can switch projects at any time using the `:AugmentProject` command.
+**Purpose:** Provides user-friendly commands for managing workspace folders.
 
-You can add multiple folders if needed:
-```lua
-vim.g.augment_workspace_folders = {
-  '/path/to/main/project',
-  '/path/to/another/related/project'
-}
-```
-
-### Switching Between Projects
-
-If you work on multiple projects and need to switch between them frequently, you can add this to your `augment.lua` file:
-
-1. **Update your `augment.lua`** in the plugins directory:
-   ```lua
-   -- Define the project switching function
-   local function setup_project_switching()
-     -- Create the project switching function
-     _G.SwitchAugmentProject = function(project_path)
-       vim.g.augment_workspace_folders = {project_path}
-       vim.cmd('Augment reload')
-       print("Augment workspace switched to: " .. project_path)
-     end
-     
-     -- Create a command to easily call this function
-     vim.api.nvim_create_user_command('AugmentProject', 
-       function(opts) _G.SwitchAugmentProject(opts.args) end, 
-       {nargs = 1, complete = 'dir'})
-   end
-   
-   -- Return the plugin configuration with the setup
-   return {
-     'augmentcode/augment.vim',
-     config = function()
-       setup_project_switching()
-     end
-   }
-   ```
-
-2. **Use the command** to switch projects:
-   ```
-   :AugmentProject /path/to/new/project
-   ```
-
-3. **Check indexing status** after switching:
-   ```
-   :Augment status
-   ```
-
-This approach keeps all Augment-related configuration in one file and ensures the command is created after the plugin is loaded.
+With this enhanced setup, you can:
+- Switch to a new project with `:AugmentProject /path/to/project`
+- Add another folder with `:AugmentAddFolder /path/to/another/folder`
+- Remove a folder with `:AugmentRemoveFolder /path/to/folder`
 
 ### Step 2: Sign In to Augment Code
 
@@ -312,6 +346,12 @@ If your workspace folders aren't being recognized:
 Now that you've installed and configured Augment Code, proceed to the next guide to learn how to optimize your workspace context for the best results.
 
 Continue to [Maximizing Augment Code's Understanding of Your Codebase](03-configuring-workspace-context.md).
+
+
+
+
+
+
 
 
 
