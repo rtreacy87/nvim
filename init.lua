@@ -6,6 +6,10 @@ require 'options'
 require 'keymaps'
 require 'lazy-install'
 
+
+vim.g.augment_node_command = 'C:\\Users\\rtreacy\\AppData\\Local\\fnm_multishells\\80176_1747332681063\\node.exe'
+
+
 -- Load all plugins from the lua/plugins directory
 require('lazy').setup('plugins', {
   ui = {
