@@ -120,21 +120,46 @@ class CodeParser:
     
     def parse_repository(self) -> List[Dict]:
         """Parse all files in the repository."""
-        parsed_files = []
+        file_paths = self._get_relevant_file_paths()
+        return self._parse_files(file_paths)
+    
+    def _get_relevant_file_paths(self) -> List[str]:
+        """Get all relevant file paths that should be processed."""
+        all_files = self._get_all_files()
+        return self._filter_relevant_files(all_files)
+    
+    def _get_all_files(self) -> List[str]:
+        """Get all files in the repository."""
+        all_files = []
         
         for root, _, files in os.walk(self.repo_path):
-            rel_root = os.path.relpath(root, self.repo_path)
-            for file in files:
-                rel_path = os.path.join(rel_root, file)
-                if rel_path.startswith('./'):
-                    rel_path = rel_path[2:]
-                
-                if self.should_ignore(rel_path):
-                    continue
-                
-                parsed_file = self.parse_file(rel_path)
-                if parsed_file:
-                    parsed_files.append(parsed_file)
+            rel_root = self._get_relative_root(root)
+            file_paths = self._get_file_paths_in_directory(rel_root, files)
+            all_files.extend(file_paths)
+        
+        return all_files
+    
+    def _get_relative_root(self, root: str) -> str:
+        """Get the relative path of a directory from the repository root."""
+        return os.path.relpath(root, self.repo_path)
+    
+    def _get_file_paths_in_directory(self, rel_root: str, files: List[str]) -> List[str]:
+        """Get relative paths for all files in a directory."""
+        relative_paths = [os.path.join(rel_root, file) for file in files]
+        return [self._normalize_path(path) for path in relative_paths]
+    
+    def _filter_relevant_files(self, all_files: List[str]) -> List[str]:
+        """Filter out files that should be ignored."""
+        return [path for path in all_files if not self.should_ignore(path)]
+    
+    def _parse_files(self, file_paths: List[str]) -> List[Dict]:
+        """Parse multiple files and return their content with metadata."""
+        parsed_files = []
+        
+        for file_path in file_paths:
+            parsed_file = self.parse_file(file_path)
+            if parsed_file:
+                parsed_files.append(parsed_file)
         
         return parsed_files
 ```
@@ -709,3 +734,4 @@ You've now built a complete code understanding system that can:
 In the next guide, we'll develop a Neovim integration that will allow you to use this system directly from your editor.
 
 Continue to [Neovim Integration](04-neovim-integration.md).
+

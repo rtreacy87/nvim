@@ -89,6 +89,108 @@ The CodeParser handles:
 - Identifying programming languages based on file extensions
 - Reading file contents and extracting metadata
 
+Here's how the methods in the CodeParser class work together:
+
+    +---------------------+
+    |   Repository Dir    |
+    |  /project           |
+    |  ├── src/           |
+    |  │   ├── main.py    |
+    |  │   └── utils.js   |
+    |  ├── node_modules/  |
+    |  │   └── lib.js     |
+    |  ├── .git/          |
+    |  │   └── HEAD       |
+    |  ├── image.png      |
+    |  └── README.md      |
+    +----------+----------+
+               |
+               v
+    +----------+----------+
+    |                     |
+    |  parse_repository() |
+    |                     |
+    +----------+----------+
+               |
+               v
+    +----------+----------+
+    |                     |
+    | _get_relevant_file_ |
+    |      paths()        |
+    |                     |
+    +----------+----------+
+               |
+               v
+    +----------+----------+     +---------------------+
+    |                     |     |                     |
+    |   _get_all_files()  |---->|   should_ignore()   |
+    |                     |     |                     |
+    +----------+----------+     +---------------------+
+               |                          |
+               v                          v
+    +----------+----------+     +---------------------+
+    |                     |     |  Files to Ignore:   |
+    | _normalize_path()   |     |  - node_modules/lib.js
+    |                     |     |  - .git/HEAD        |
+    +---------------------+     |  - image.png        |
+               |                +---------------------+
+               |                          |
+               |                          v
+               |                +---------------------+
+               |                |  Files to Keep:     |
+               |                |  - src/main.py      |
+               |                |  - src/utils.js     |
+               |                |  - README.md        |
+               |                +----------+----------+
+               |                            |
+               +----------------------------+
+                             |
+                             v
+                  +----------+----------+
+                  |                     |
+                  |     parse_file()    |
+                  |                     |
+                  +----------+----------+
+                             |
+                             v
+                  +----------+----------+
+                  |                     |
+                  | get_file_language() |
+                  |                     |
+                  +----------+----------+
+                             |
+                             v
+                  +----------+----------+
+                  |  Parsed Files:      |
+                  |  [{                 |
+                  |    path: 'src/main.py',
+                  |    content: '...',  |
+                  |    language: 'python',
+                  |    size: 1024       |
+                  |  },                 |
+                  |  {                  |
+                  |    path: 'src/utils.js',
+                  |    content: '...',  |
+                  |    language: 'javascript',
+                  |    size: 512        |
+                  |  },                 |
+                  |  {                  |
+                  |    path: 'README.md',
+                  |    content: '...',  |
+                  |    language: 'markdown',
+                  |    size: 256        |
+                  |  }]                 |
+                  +---------------------+
+
+The workflow is:
+1. `parse_repository()` is the main entry point that orchestrates the process
+2. It calls `_get_relevant_file_paths()` to get all files that should be processed
+3. `_get_relevant_file_paths()` uses `_get_all_files()` and filters with `should_ignore()`
+4. `_get_all_files()` walks the directory and uses `_normalize_path()` to standardize paths
+5. For each relevant file, `parse_file()` extracts content and metadata
+6. `parse_file()` uses `get_file_language()` to determine the programming language
+7. The result is a list of parsed files with their content and metadata
+
 ```python
 # code_parser.py
 import os
@@ -190,6 +292,14 @@ class CodeParser:
             '.yaml': 'yaml',
             '.yml': 'yaml',
             '.toml': 'toml',
+            '.r': 'r',
+            '.R': 'r',  # Uppercase .R extension
+            '.rmd': 'r',
+            '.Rmd': 'r', # Uppercase .Rmd extension
+            '.rds': 'r',
+            '.rdata': 'r',
+            '.RData': 'r', # Uppercase .RData extension
+            '.rproj': 'r',
         }
         return language_map.get(ext)
     
@@ -294,111 +404,125 @@ class CodeParser:
         return path
 ```
 
-Here's how the methods in the CodeParser class work together:
+
+
+## Code Chunking System
+
+### Executive Summary
+
+The `CodeChunker` class is a sophisticated text processing system designed to break down source code into meaningful, manageable segments for AI analysis. It employs two primary chunking strategies:
+
+1. **Function-based chunking**: Identifies natural code boundaries like functions and classes using language-specific patterns
+2. **Size-based chunking**: Ensures chunks stay within memory constraints while preserving context through overlapping segments
+
+This intelligent chunking system optimizes the balance between context preservation and processing efficiency, enabling the AI to better understand code structure and relationships. The system handles multiple programming languages and adapts its strategy based on code characteristics.
+
+### Chunking Process Diagram
 
     +---------------------+
-    |   Repository Dir    |
-    |  /project           |
-    |  ├── src/           |
-    |  │   ├── main.py    |
-    |  │   └── utils.js   |
-    |  ├── node_modules/  |
-    |  │   └── lib.js     |
-    |  ├── .git/          |
-    |  │   └── HEAD       |
-    |  ├── image.png      |
-    |  └── README.md      |
+    |   Source Code File  |
+    |  function main() {  |
+    |    let x = 1;       |
+    |    console.log(x);  |
+    |  }                  |
+    |                     |
+    |  class User {       |
+    |    constructor() {  |
+    |      this.name = '';|
+    |    }                |
+    |  }                  |
     +----------+----------+
                |
                v
     +----------+----------+
     |                     |
-    |  parse_repository() |
-    |                     |
-    +----------+----------+
-               |
-               v
-    +----------+----------+
-    |                     |
-    | _get_relevant_file_ |
-    |      paths()        |
+    |   chunk_file()      |
     |                     |
     +----------+----------+
                |
                v
     +----------+----------+     +---------------------+
     |                     |     |                     |
-    |   _get_all_files()  |---->|   should_ignore()   |
-    |                     |     |                     |
+    | chunk_by_function() |---->| _get_language_      |
+    |                     |     |     pattern()       |
     +----------+----------+     +---------------------+
                |                          |
                v                          v
     +----------+----------+     +---------------------+
-    |                     |     |  Files to Ignore:   |
-    | _normalize_path()   |     |  - node_modules/lib.js
-    |                     |     |  - .git/HEAD        |
-    +---------------------+     |  - image.png        |
-               |                +---------------------+
+    |                     |     | Pattern:            |
+    | _find_pattern_      |     | function\s+\w+\s*\( |
+    |    matches()        |     | class\s+\w+         |
+    +---------------------+     +---------------------+
+               |
+               v
+    +----------+----------+     +---------------------+
+    |                     |     |                     |
+    | _process_matches()  |---->| _determine_chunk_   |
+    |                     |     |      end()          |
+    +----------+----------+     +---------------------+
+               |                          |
+               v                          v
+    +----------+----------+     +---------------------+
+    |                     |     | Is chunk too large? |
+    | _handle_chunk_      |---->| Yes: Split it       |
+    |    content()        |     | No: Keep as is      |
+    +---------------------+     +---------------------+
+               |
+               |
+               +----------------+
+               |                |
+               v                v
+    +----------+----------+    +---------------------+
+    |                     |    |                     |
+    | _create_function_   |    | chunk_by_size()     |
+    |    chunk()          |    |                     |
+    +----------+----------+    +---------------------+
                |                          |
                |                          v
-               |                +---------------------+
-               |                |  Files to Keep:     |
-               |                |  - src/main.py      |
-               |                |  - src/utils.js     |
-               |                |  - README.md        |
-               |                +----------+----------+
-               |                            |
-               +----------------------------+
+               |               +---------------------+
+               |               |                     |
+               |               | _process_lines_     |
+               |               |    into_chunks()    |
+               |               +----------+----------+
+               |                          |
+               |                          v
+               |               +---------------------+
+               |               | For each line:      |
+               |               | - Process line      |
+               |               | - Add to chunk      |
+               |               | - Create new chunk  |
+               |               |   when needed       |
+               |               | - Add overlap       |
+               |               +----------+----------+
+               |                          |
+               +---------------------------+
                              |
                              v
                   +----------+----------+
-                  |                     |
-                  |     parse_file()    |
-                  |                     |
-                  +----------+----------+
-                             |
-                             v
-                  +----------+----------+
-                  |                     |
-                  | get_file_language() |
-                  |                     |
-                  +----------+----------+
-                             |
-                             v
-                  +----------+----------+
-                  |  Parsed Files:      |
+                  |  Chunked Code:      |
                   |  [{                 |
-                  |    path: 'src/main.py',
-                  |    content: '...',  |
-                  |    language: 'python',
-                  |    size: 1024       |
+                  |    content: 'function main() {...}',
+                  |    type: 'function',|
+                  |    file_path: '...', |
+                  |    language: 'javascript'|
                   |  },                 |
                   |  {                  |
-                  |    path: 'src/utils.js',
-                  |    content: '...',  |
-                  |    language: 'javascript',
-                  |    size: 512        |
-                  |  },                 |
-                  |  {                  |
-                  |    path: 'README.md',
-                  |    content: '...',  |
-                  |    language: 'markdown',
-                  |    size: 256        |
+                  |    content: 'class User {...}',
+                  |    type: 'function',|
+                  |    file_path: '...', |
+                  |    language: 'javascript'|
                   |  }]                 |
                   +---------------------+
 
 The workflow is:
-1. `parse_repository()` is the main entry point that orchestrates the process
-2. It calls `_get_relevant_file_paths()` to get all files that should be processed
-3. `_get_relevant_file_paths()` uses `_get_all_files()` and filters with `should_ignore()`
-4. `_get_all_files()` walks the directory and uses `_normalize_path()` to standardize paths
-5. For each relevant file, `parse_file()` extracts content and metadata
-6. `parse_file()` uses `get_file_language()` to determine the programming language
-7. The result is a list of parsed files with their content and metadata
-
-## Implementing Code Chunking
-
-Next, we'll implement a chunking strategy to break code into meaningful segments:
+1. `chunk_file()` is called with a file's content and metadata
+2. The system first attempts `chunk_by_function()` to find natural code boundaries
+3. Language-specific patterns are used to identify functions and classes
+4. Each match is processed to determine chunk boundaries
+5. Large chunks are split using `chunk_by_size()` to stay within size limits
+6. `chunk_by_size()` processes the code line by line, creating chunks with overlap
+7. All chunks are enriched with file metadata (path, language)
+8. The result is a list of code chunks optimized for AI processing
 
 ```python
 # code_chunker.py
@@ -439,6 +563,7 @@ class CodeChunker:
             'typescript': r'(function\s+\w+\s*\(.*?\)|class\s+\w+|const\s+\w+\s*=\s*(?:function)?\s*\(.*?\)|let\s+\w+\s*=\s*(?:function)?\s*\(.*?\)|var\s+\w+\s*=\s*(?:function)?\s*\(.*?\))',
             'java': r'(public|private|protected)?\s+(static)?\s+\w+\s+\w+\s*\(.*?\)|class\s+\w+',
             'cpp': r'(\w+\s+\w+\s*\(.*?\))|class\s+\w+',
+            'r': r'(\w+\s*<-\s*function\s*\(.*?\)|\w+\s*=\s*function\s*\(.*?\))',
         }
         return patterns.get(language) if language else None
     
@@ -497,25 +622,72 @@ class CodeChunker:
     def chunk_by_size(self, content: str) -> List[Dict]:
         """Chunk code by size with overlap."""
         lines = self._split_content_into_lines(content)
+        return self._process_lines_into_chunks(lines)
+    
+    def _process_lines_into_chunks(self, lines: List[str]) -> List[Dict]:
+        """Process lines of code into appropriately sized chunks."""
         chunks = []
-        
-        current_chunk = ""
-        current_size = 0
+        current_chunk_state = self._initialize_chunk_state()
         
         for line in lines:
-            line_with_newline = self._add_newline(line)
-            line_size = len(line_with_newline)
-            
-            if self._should_create_new_chunk(current_size, line_size, current_chunk):
-                chunks.append(self._create_size_chunk(current_chunk))
-                current_chunk, current_size = self._start_new_chunk_with_overlap(current_chunk, line_with_newline)
-            else:
-                current_chunk, current_size = self._add_line_to_chunk(current_chunk, current_size, line_with_newline, line_size)
+            current_chunk_state = self._process_line(line, current_chunk_state, chunks)
         
-        if current_chunk:
-            chunks.append(self._create_size_chunk(current_chunk))
-        
+        self._add_final_chunk_if_needed(current_chunk_state, chunks)
         return chunks
+    
+    def _initialize_chunk_state(self) -> Dict:
+        """Initialize the state for chunk processing."""
+        return {
+            'text': "",
+            'size': 0
+        }
+    
+    def _process_line(self, line: str, chunk_state: Dict, chunks: List[Dict]) -> Dict:
+        """Process a single line and update chunk state."""
+        line_with_newline = self._add_newline(line)
+        line_size = len(line_with_newline)
+        
+        if self._should_create_new_chunk(chunk_state['size'], line_size, chunk_state['text']):
+            self._add_chunk_to_results(chunk_state['text'], chunks)
+            return self._start_new_chunk_with_overlap(chunk_state['text'], line_with_newline)
+        else:
+            return self._add_line_to_chunk_state(chunk_state, line_with_newline, line_size)
+    
+    def _add_chunk_to_results(self, chunk_text: str, chunks: List[Dict]) -> None:
+        """Add a completed chunk to the results list."""
+        chunks.append(self._create_size_chunk(chunk_text))
+    
+    def _add_final_chunk_if_needed(self, chunk_state: Dict, chunks: List[Dict]) -> None:
+        """Add the final chunk if there's remaining content."""
+        if chunk_state['text']:
+            self._add_chunk_to_results(chunk_state['text'], chunks)
+    
+    def _add_line_to_chunk_state(self, chunk_state: Dict, line: str, line_size: int) -> Dict:
+        """Add a line to the current chunk state."""
+        return {
+            'text': chunk_state['text'] + line,
+            'size': chunk_state['size'] + line_size
+        }
+    
+    def _start_new_chunk_with_overlap(self, current_chunk: str, new_line: str) -> Dict:
+        """Start a new chunk with overlap from the previous chunk."""
+        overlap_lines = self._get_overlap_lines(current_chunk)
+        new_chunk_text = self._create_chunk_with_overlap(overlap_lines, new_line)
+        
+        return {
+            'text': new_chunk_text,
+            'size': len(new_chunk_text)
+        }
+    
+    def _get_overlap_lines(self, text: str) -> List[str]:
+        """Get the lines that should be included in the overlap."""
+        lines = text.split('\n')
+        overlap_line_count = max(1, self.overlap // 20)  # Approximate lines for overlap
+        return lines[-overlap_line_count:]
+    
+    def _create_chunk_with_overlap(self, overlap_lines: List[str], new_line: str) -> str:
+        """Create a new chunk text with overlap lines and the new line."""
+        return '\n'.join(overlap_lines) + '\n' + new_line
     
     def _split_content_into_lines(self, content: str) -> List[str]:
         """Split content into lines to avoid breaking in the middle of a line."""
@@ -537,16 +709,6 @@ class CodeChunker:
             'start': 0,  # Approximate
             'end': 0     # Approximate
         }
-    
-    def _start_new_chunk_with_overlap(self, current_chunk: str, new_line: str) -> tuple:
-        """Start a new chunk with overlap from the previous chunk."""
-        overlap_lines = current_chunk.split('\n')[-self.overlap//20:]  # Approximate lines for overlap
-        new_chunk = '\n'.join(overlap_lines) + '\n' + new_line
-        return new_chunk, len(new_chunk)
-    
-    def _add_line_to_chunk(self, current_chunk: str, current_size: int, line: str, line_size: int) -> tuple:
-        """Add a line to the current chunk."""
-        return current_chunk + line, current_size + line_size
     
     def chunk_file(self, file_data: Dict) -> List[Dict]:
         """Chunk a file into segments."""
@@ -871,6 +1033,11 @@ You've now built a complete code indexing system that can:
 In the next guide, we'll build a Retrieval-Augmented Generation (RAG) system that uses this index to provide context-aware responses to coding questions.
 
 Continue to [Implementing a Retrieval-Augmented Generation (RAG) System](04-implementing-rag-system.md).
+
+
+
+
+
 
 
 
