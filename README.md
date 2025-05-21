@@ -220,6 +220,15 @@ If `<C-v>` (Ctrl+v) pastes text instead of entering Block Visual mode, your term
 
 If you're using a remote connection (SSH) or a terminal multiplexer like tmux, you might need additional configuration to get Ctrl+v working properly for Block Visual mode.
 
+#### Augment Code Keybindings
+
+| Keybinding | Description |
+|------------|-------------|
+| `<Tab>` | Accept Augment code suggestion |
+| `<leader>ac` | Start Augment chat (normal mode) or chat about selection (visual mode) |
+| `<leader>an` | Start a new Augment chat conversation |
+| `<leader>at` | Toggle the Augment chat panel |
+
 ### Installed Plugins
 
 This Neovim configuration includes the following plugins:
@@ -243,7 +252,8 @@ This Neovim configuration includes the following plugins:
 - **mason.nvim**: Package manager for LSP servers, linters, and formatters
 - **nvim-cmp**: Autocompletion plugin
 - **LuaSnip**: Snippet engine
-- **treesitter**: Advanced syntax highlighting and code understanding
+- **treesitter**: Advanced syntax highlighting and code understanding. Details in the [Treesitter wiki](wikis\treesitter-wiki\README.md).
+- **augment.vim**: AI-powered coding assistant. Details in the [Augment Code wiki](wikis\augment-neovim-wiki\README.md).
 
 #### File Management
 
@@ -273,25 +283,7 @@ This configuration includes [Augment Code](https://augmentcode.com), an AI-power
 - **Interactive chat** for asking questions about your code without leaving Neovim
 - **Codebase understanding** for more relevant suggestions and answers
 
-#### Augment Code Keybindings
 
-| Keybinding | Description |
-|------------|-------------|
-| `<Tab>` | Accept Augment code suggestion |
-| `<leader>ac` | Start Augment chat (normal mode) or chat about selection (visual mode) |
-| `<leader>an` | Start a new Augment chat conversation |
-| `<leader>at` | Toggle the Augment chat panel |
-
-#### Getting Started with Augment Code
-
-For detailed instructions on using Augment Code in Neovim, check out the [Augment Code for Neovim Wiki](wikis/augment-neovim-wiki/README.md), which includes:
-
-1. [Getting Started with Augment Code](wikis/augment-neovim-wiki/01-getting-started-with-augment-code.md)
-2. [Setting Up Augment Code](wikis/augment-neovim-wiki/02-setting-up-augment-code.md)
-3. [Configuring Workspace Context](wikis/augment-neovim-wiki/03-configuring-workspace-context.md)
-4. [Using Code Completions](wikis/augment-neovim-wiki/04-using-augment-code-completions.md)
-5. [Using Augment Chat](wikis/augment-neovim-wiki/05-using-augment-chat.md)
-6. [Advanced Configuration](wikis/augment-neovim-wiki/06-advanced-configuration.md)
 
 ### Plugin Options and Customization
 
