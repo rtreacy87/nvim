@@ -265,6 +265,34 @@ This Neovim configuration includes the following plugins:
 - **markdown-preview**: Live preview for markdown files
 - **tmux-vim-navigator**: Seamless navigation between tmux panes and vim splits
 
+### AI-Powered Coding with Augment Code
+
+This configuration includes [Augment Code](https://augmentcode.com), an AI-powered coding assistant that provides:
+
+- **Context-aware code completions** that understand your entire codebase
+- **Interactive chat** for asking questions about your code without leaving Neovim
+- **Codebase understanding** for more relevant suggestions and answers
+
+#### Augment Code Keybindings
+
+| Keybinding | Description |
+|------------|-------------|
+| `<Tab>` | Accept Augment code suggestion |
+| `<leader>ac` | Start Augment chat (normal mode) or chat about selection (visual mode) |
+| `<leader>an` | Start a new Augment chat conversation |
+| `<leader>at` | Toggle the Augment chat panel |
+
+#### Getting Started with Augment Code
+
+For detailed instructions on using Augment Code in Neovim, check out the [Augment Code for Neovim Wiki](wikis/augment-neovim-wiki/README.md), which includes:
+
+1. [Getting Started with Augment Code](wikis/augment-neovim-wiki/01-getting-started-with-augment-code.md)
+2. [Setting Up Augment Code](wikis/augment-neovim-wiki/02-setting-up-augment-code.md)
+3. [Configuring Workspace Context](wikis/augment-neovim-wiki/03-configuring-workspace-context.md)
+4. [Using Code Completions](wikis/augment-neovim-wiki/04-using-augment-code-completions.md)
+5. [Using Augment Chat](wikis/augment-neovim-wiki/05-using-augment-chat.md)
+6. [Advanced Configuration](wikis/augment-neovim-wiki/06-advanced-configuration.md)
+
 ### Plugin Options and Customization
 
 #### Telescope
