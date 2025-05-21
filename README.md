@@ -252,8 +252,8 @@ This Neovim configuration includes the following plugins:
 - **mason.nvim**: Package manager for LSP servers, linters, and formatters
 - **nvim-cmp**: Autocompletion plugin
 - **LuaSnip**: Snippet engine
-- **treesitter**: Advanced syntax highlighting and code understanding. Details in the [Treesitter wiki](wikis\treesitter-wiki\README.md).
-- **augment.vim**: AI-powered coding assistant. Details in the [Augment Code wiki](wikis\augment-neovim-wiki\README.md).
+- **treesitter**: Advanced syntax highlighting and code understanding. Details in the [Treesitter wiki](wikis/treesitter-wiki/README.md).
+- **augment.vim**: AI-powered coding assistant. Details in the [Augment Code wiki](wikis/augment-neovim-wiki/README.md).
 
 #### File Management
 
