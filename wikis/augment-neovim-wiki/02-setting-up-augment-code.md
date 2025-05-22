@@ -14,12 +14,12 @@ If you're already using the Lazy.nvim plugin manager (which you are, based on yo
    ```bash
    nvim ~/.config/nvim/init.lua
    ```
-   
+
 2. Create a new file in your plugins directory:
    ```bash
    nvim ~/.config/nvim/lua/plugins/augment.lua
    ```
-   
+
    And add the following content:
    ```lua
    return {
@@ -76,14 +76,14 @@ return {
       vim.cmd('Augment reload')
       print("Augment workspace set to: " .. path)
     end
-    
+
     -- Function to add a workspace folder
     local function add_workspace_folder(path)
       -- Initialize if nil
       if not vim.g.augment_workspace_folders then
         vim.g.augment_workspace_folders = {}
       end
-      
+
       -- Check if folder already exists in the list
       for _, folder in ipairs(vim.g.augment_workspace_folders) do
         if folder == path then
@@ -91,20 +91,20 @@ return {
           return
         end
       end
-      
+
       -- Add the new folder
       table.insert(vim.g.augment_workspace_folders, path)
       vim.cmd('Augment reload')
       print("Added workspace folder: " .. path)
     end
-    
+
     -- Function to remove a workspace folder
     local function remove_workspace_folder(path)
       if not vim.g.augment_workspace_folders then
         print("No workspace folders configured")
         return
       end
-      
+
       -- Find and remove the folder
       for i, folder in ipairs(vim.g.augment_workspace_folders) do
         if folder == path then
@@ -114,15 +114,15 @@ return {
           return
         end
       end
-      
+
       print("Workspace folder not found: " .. path)
     end
-    
+
     -- Function to validate directory exists
     local function is_valid_directory(path)
       return path and path ~= '' and vim.fn.isdirectory(path) == 1
     end
-    
+
     -- Function to prompt for workspace path
     local function prompt_for_workspace()
       local path = vim.fn.input({
@@ -130,7 +130,7 @@ return {
         default = vim.fn.getcwd(),
         completion = 'dir'
       })
-      
+
       if is_valid_directory(path) then
         set_workspace_folder(path)
         return true
@@ -140,7 +140,7 @@ return {
       end
       return false
     end
-    
+
     -- Function to handle workspace initialization
     local function initialize_workspace()
       if not vim.g.augment_workspace_folders or #vim.g.augment_workspace_folders == 0 then
@@ -152,10 +152,10 @@ return {
         end, 100)
       end
     end
-    
+
     -- Initialize workspace on startup
     initialize_workspace()
-    
+
     -- Set up global functions for project management
     _G.SwitchAugmentProject = function(project_path)
       if is_valid_directory(project_path) then
@@ -164,7 +164,7 @@ return {
         print("Error: Directory '" .. project_path .. "' does not exist.")
       end
     end
-    
+
     _G.AddAugmentFolder = function(project_path)
       if is_valid_directory(project_path) then
         add_workspace_folder(project_path)
@@ -172,22 +172,22 @@ return {
         print("Error: Directory '" .. project_path .. "' does not exist.")
       end
     end
-    
+
     _G.RemoveAugmentFolder = function(project_path)
       remove_workspace_folder(project_path)
     end
-    
+
     -- Create commands to easily call these functions
-    vim.api.nvim_create_user_command('AugmentProject', 
-      function(opts) _G.SwitchAugmentProject(opts.args) end, 
+    vim.api.nvim_create_user_command('AugmentProject',
+      function(opts) _G.SwitchAugmentProject(opts.args) end,
       {nargs = 1, complete = 'dir'})
-      
-    vim.api.nvim_create_user_command('AugmentAddFolder', 
-      function(opts) _G.AddAugmentFolder(opts.args) end, 
+
+    vim.api.nvim_create_user_command('AugmentAddFolder',
+      function(opts) _G.AddAugmentFolder(opts.args) end,
       {nargs = 1, complete = 'dir'})
-      
-    vim.api.nvim_create_user_command('AugmentRemoveFolder', 
-      function(opts) _G.RemoveAugmentFolder(opts.args) end, 
+
+    vim.api.nvim_create_user_command('AugmentRemoveFolder',
+      function(opts) _G.RemoveAugmentFolder(opts.args) end,
       {nargs = 1})
   end
 }
@@ -406,6 +406,97 @@ If your workspace folders aren't being recognized:
 1. Make sure the paths are correct and accessible
 2. Check that you've set `vim.g.augment_workspace_folders` before loading the plugin
 3. Restart Neovim after making changes
+
+### WSL-Specific Issues
+
+When using Augment Code in WSL (Windows Subsystem for Linux), you may encounter unique challenges:
+
+#### Node.js Path Issues in WSL
+
+If you see errors like:
+```
+[ERROR] The Augment runtime (C:\Users\username\AppData\Local\fnm_multishells\...\node.exe) was not found.
+[ERROR] The Augment plugin failed to initialize. Only `:Augment status` and `:Augment log` commands are available.
+```
+
+This typically happens because Augment is trying to use a Windows Node.js path from within WSL. Try these solutions:
+
+1. **Install Node.js within WSL**:
+   ```bash
+   # Using nvm (recommended)
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+   source ~/.bashrc
+   nvm install --lts
+
+   # Or using apt (Ubuntu/Debian)
+   sudo apt update
+   sudo apt install nodejs npm
+   ```
+
+2. **Set the correct Node.js path in your Neovim config**:
+   ```lua
+   -- Add to your init.lua
+   vim.g.augment_node_command = '/usr/bin/node'  -- Adjust path based on your WSL Node.js location
+   ```
+
+   To find your Node.js path in WSL, run:
+   ```bash
+   which node
+   ```
+
+3. **Check for path conflicts**:
+   - WSL might be inheriting Windows PATH variables
+   - Run this command to see all Node.js installations:
+   ```bash
+   whereis node
+   ```
+   - Use the full path to the WSL Node.js in your configuration
+
+4. **Verify Node.js works in WSL**:
+   ```bash
+   node --version
+   ```
+   - If this works but Augment still can't find Node.js, explicitly set the path as shown above
+
+#### WSL Path Translation Issues
+
+WSL translates between Windows and Linux paths, which can sometimes cause confusion:
+
+1. **For Windows paths in WSL**:
+   - Windows C: drive is mounted at `/mnt/c` in WSL
+   - If you need to access Windows files, use paths like `/mnt/c/Users/username/...`
+
+2. **For WSL paths in Windows**:
+   - WSL filesystem is accessible in Windows at `\\wsl$\Ubuntu\home\username\...`
+   - Make sure your workspace folders use the correct format for where Neovim is running
+
+3. **Mixed environment setup**:
+   If you're running Neovim in WSL but want to work with both Windows and WSL files:
+   ```lua
+   vim.g.augment_workspace_folders = {
+     '/home/username/wsl-project',  -- WSL project
+     '/mnt/c/Users/username/windows-project'  -- Windows project
+   }
+   ```
+
+#### Browser Integration in WSL
+
+If the browser doesn't open automatically during sign-in:
+
+1. **Install a browser within WSL** (if using WSL with GUI):
+   ```bash
+   sudo apt install firefox
+   ```
+
+2. **Configure WSL to use Windows browsers**:
+   ```bash
+   # Add to your .bashrc or .zshrc
+   export BROWSER='/mnt/c/Program Files/Google/Chrome/Application/chrome.exe'
+   ```
+
+3. **Manually open the URL**:
+   - Copy the URL shown in the Neovim command output
+   - Open it in your Windows browser
 
 ## Next Steps
 

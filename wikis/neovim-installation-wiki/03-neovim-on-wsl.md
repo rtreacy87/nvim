@@ -315,6 +315,75 @@ Access WSL files from Windows using the `\\wsl$\` path:
 
 2. **Create shortcuts** to frequently used WSL locations
 
+## Using Augment Code in WSL
+
+If you're using the Augment Code plugin in WSL, you may encounter some specific issues that require additional configuration.
+
+### Node.js Path Configuration
+
+The most common issue when using Augment Code in WSL is that it may try to use a Windows Node.js path instead of the WSL Node.js:
+
+1. **Install Node.js within WSL**:
+   ```bash
+   # Using nvm (recommended)
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+   source ~/.bashrc
+   nvm install --lts
+
+   # Or using apt (Ubuntu/Debian)
+   sudo apt update
+   sudo apt install nodejs npm
+   ```
+
+2. **Set the correct Node.js path in your Neovim config**:
+   ```lua
+   -- Add to your init.lua
+   vim.g.augment_node_command = '/usr/bin/node'  -- Adjust path based on your WSL Node.js location
+   ```
+
+   To find your Node.js path in WSL, run:
+   ```bash
+   which node
+   ```
+
+### Workspace Path Configuration
+
+When using Augment Code in WSL, you need to be careful with path formats:
+
+1. **For WSL projects**:
+   ```lua
+   vim.g.augment_workspace_folders = {'/home/username/projects/my-project'}
+   ```
+
+2. **For Windows projects accessed from WSL**:
+   ```lua
+   vim.g.augment_workspace_folders = {'/mnt/c/Users/username/projects/my-project'}
+   ```
+
+3. **For mixed environment projects**:
+   ```lua
+   vim.g.augment_workspace_folders = {
+     '/home/username/wsl-project',
+     '/mnt/c/Users/username/windows-project'
+   }
+   ```
+
+### Browser Integration for Sign-in
+
+When signing in to Augment Code from WSL:
+
+1. **Configure WSL to use Windows browsers**:
+   ```bash
+   # Add to your .bashrc or .zshrc
+   export BROWSER='/mnt/c/Program Files/Google/Chrome/Application/chrome.exe'
+   ```
+
+2. **Manually open the URL** if automatic browser opening doesn't work:
+   - Copy the URL shown in the Neovim command output
+   - Open it in your Windows browser
+
+For more detailed troubleshooting, refer to the [Augment Code wiki](../augment-neovim-wiki/02-setting-up-augment-code.md#wsl-specific-issues).
+
 ## Next Steps
 
 Now that you have Neovim running on WSL, you can:
