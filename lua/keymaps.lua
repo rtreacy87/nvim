@@ -44,6 +44,10 @@ vim.keymap.set('n', '<leader>om', ':MarkdownPreview<CR>', { desc = '[O]pen [M]ar
 vim.keymap.set('n', '<leader>cm', ':MarkdownPreviewStop<CR>', { desc = '[C]lose [Markdown Preview' })
 
 vim.keymap.set('n', '<leader>tm', ':TableModeToggle<CR>', { desc = '[T]able [M]ode toggle' })
+
+-- Alternative mapping for block visual mode if Ctrl+v is intercepted by the terminal
+vim.keymap.set('n', '<leader>vb', '<C-v>', { desc = 'Enter Block Visual mode' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 

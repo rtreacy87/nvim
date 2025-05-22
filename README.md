@@ -11,6 +11,8 @@ This is a customized Neovim configuration based on kickstart.nvim. It provides:
 
 This README will help you understand the key features and how to use them effectively, especially if you're new to Neovim.
 
+> **New to Neovim?** Check out our [Neovim Installation Guide](wikis/neovim-installation-wiki/README.md) for detailed instructions on installing and setting up Neovim on Windows, macOS, Linux, and WSL.
+
 ## About This Configuration
 
 This configuration is based on [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim), a well-documented starting point for Neovim. I've customized it to create a more modular structure where plugins are organized in separate files.
@@ -23,7 +25,7 @@ This configuration is based on [kickstart.nvim](https://github.com/nvim-lua/kick
 - Optional but recommended: A [Nerd Font](https://www.nerdfonts.com/) for icons
 - For Python development: Node.js (for pyright language server)
 
-For detailed installation instructions for Neovim and its dependencies, refer to the [kickstart.nvim documentation](https://github.com/nvim-lua/kickstart.nvim).
+For detailed installation instructions for Neovim and its dependencies, refer to our [Neovim Installation Guide](wikis/neovim-installation-wiki/README.md) which covers all major platforms.
 
 ## Keymaps and Features Guide
 
@@ -133,6 +135,102 @@ Telescope is a powerful fuzzy finder:
 | `<leader>cm` | Close markdown preview |
 | `<leader>tm` | Toggle table mode (for editing markdown tables) |
 
+### Split Pane Navigation
+
+Navigating between split panes in Neovim is essential for efficient workflow:
+
+| Keybinding | Description |
+|------------|-------------|
+| `<C-h>` | Move focus to the left split |
+| `<C-j>` | Move focus to the down split |
+| `<C-k>` | Move focus to the up split |
+| `<C-l>` | Move focus to the right split |
+| `<C-\>` | Move to previous split (when using tmux) |
+
+#### Creating and Managing Splits
+
+| Keybinding | Description |
+|------------|-------------|
+| `<leader>oh` | Open a horizontal split |
+| `<leader>ov` | Open a vertical split |
+| `<leader>cw` | Close the current split |
+
+#### Resizing Splits
+
+| Keybinding | Description |
+|------------|-------------|
+| `<C-w>>` | Increase width of current split |
+| `<C-w><` | Decrease width of current split |
+| `<C-w>+` | Increase height of current split |
+| `<C-w>-` | Decrease height of current split |
+| `<C-w>=` | Make all splits equal size |
+
+These keybindings make it easy to work with multiple files side by side, compare code, or reference documentation while coding.
+
+### Visual Mode Selection
+
+Neovim offers multiple visual selection modes for different editing needs:
+
+| Mode | How to Enter | Description |
+|------|-------------|-------------|
+| Character-wise Visual | `v` | Select characters one by one |
+| Line-wise Visual | `V` (capital V) | Select entire lines |
+| Block-wise Visual | `<C-v>` (Ctrl+v) | Select in a rectangular block pattern |
+| Select mode | `gh` | Similar to visual but with different behavior |
+
+#### Block Visual Mode Tips
+
+Block Visual mode (`<C-v>`) is particularly powerful for:
+
+- Editing multiple lines at once
+- Adding text to the beginning/end of multiple lines
+- Deleting columns of text
+- Creating box-like selections
+
+Common operations in Block Visual mode:
+
+1. Press `<C-v>` to enter Block Visual mode
+2. Use movement keys (hjkl) to select a rectangular region
+3. To insert text at the beginning of each line:
+   - Select the block at line beginnings
+   - Press `I`, type your text, then press `<Esc>`
+4. To append text at the end of each line:
+   - Select the block at line ends
+   - Press `A`, type your text, then press `<Esc>`
+5. To delete a column of text:
+   - Select the block/column
+   - Press `d` to delete
+
+This mode is invaluable for tabular data editing and code alignment.
+
+#### Troubleshooting Block Visual Mode
+
+If `<C-v>` (Ctrl+v) pastes text instead of entering Block Visual mode, your terminal or OS is likely intercepting the keystroke before Neovim can process it. Here are solutions:
+
+1. **Use the alternative keystroke**: Neovim also recognizes `<C-q>` (Ctrl+q) for Block Visual mode
+
+2. **Use the custom mapping in this config**:
+   - `<leader>vb` is mapped to enter Block Visual mode
+
+3. **Configure your terminal**:
+   - **Windows Terminal**: Open settings and remap the paste action
+   - **macOS Terminal**: Go to Preferences → Keyboard and modify Ctrl+v binding
+   - **iTerm2**: Go to Preferences → Profiles → Keys and remap Ctrl+v
+
+4. **Check existing mappings**:
+   - Run `:verbose map <C-v>` in Neovim to see if Ctrl+v is mapped to something else
+
+If you're using a remote connection (SSH) or a terminal multiplexer like tmux, you might need additional configuration to get Ctrl+v working properly for Block Visual mode.
+
+#### Augment Code Keybindings
+
+| Keybinding | Description |
+|------------|-------------|
+| `<Tab>` | Accept Augment code suggestion |
+| `<leader>ac` | Start Augment chat (normal mode) or chat about selection (visual mode) |
+| `<leader>an` | Start a new Augment chat conversation |
+| `<leader>at` | Toggle the Augment chat panel |
+
 ### Installed Plugins
 
 This Neovim configuration includes the following plugins:
@@ -156,7 +254,8 @@ This Neovim configuration includes the following plugins:
 - **mason.nvim**: Package manager for LSP servers, linters, and formatters
 - **nvim-cmp**: Autocompletion plugin
 - **LuaSnip**: Snippet engine
-- **treesitter**: Advanced syntax highlighting and code understanding
+- **treesitter**: Advanced syntax highlighting and code understanding. Details in the [Treesitter wiki](wikis/treesitter-wiki/README.md).
+- **augment.vim**: AI-powered coding assistant. Details in the [Augment Code wiki](wikis/augment-neovim-wiki/README.md).
 
 #### File Management
 
@@ -177,6 +276,16 @@ This Neovim configuration includes the following plugins:
 
 - **markdown-preview**: Live preview for markdown files
 - **tmux-vim-navigator**: Seamless navigation between tmux panes and vim splits
+
+### AI-Powered Coding with Augment Code
+
+This configuration includes [Augment Code](https://augmentcode.com), an AI-powered coding assistant that provides:
+
+- **Context-aware code completions** that understand your entire codebase
+- **Interactive chat** for asking questions about your code without leaving Neovim
+- **Codebase understanding** for more relevant suggestions and answers
+
+
 
 ### Plugin Options and Customization
 

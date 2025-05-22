@@ -325,6 +325,72 @@ If the plugin doesn't seem to be loading:
 2. Make sure you have the required dependencies:
    - Run `node --version` to verify Node.js is installed and is version 22.0.0 or newer
 
+### Node.js Not Found
+
+If you see errors like:
+```
+[ERROR] The Augment runtime (node) was not found.
+[ERROR] The Augment plugin failed to initialize. Only `:Augment status` and `:Augment log` commands are available.
+```
+
+Try these solutions:
+
+1. **Verify Node.js installation**:
+   - Open a terminal and run `node --version`
+   - If not found, install Node.js from [nodejs.org](https://nodejs.org/) (version 22.0.0 or newer)
+
+2. **Set custom Node.js path**:
+   - If Node.js is installed but Augment can't find it, add this to your `init.lua`:
+   ```lua
+   vim.g.augment_node_command = '/path/to/your/node'
+   ```
+   - For example, if your Node.js is at `/usr/local/bin/node`:
+   ```lua
+   vim.g.augment_node_command = '/usr/local/bin/node'
+   ```
+   - On Windows, you might need to use:
+   ```lua
+   vim.g.augment_node_command = 'C:\\Program Files\\nodejs\\node.exe'
+   ```
+
+3. **Windows-specific issues**:
+   - If Node.js works in PowerShell but not in Developer Command Prompt:
+     - Find the exact path to your Node.js executable in PowerShell:
+       ```powershell
+       Get-Command node | Select-Object -ExpandProperty Source
+       ```
+     - Copy the full path and use it in your Neovim config:
+       ```lua
+       vim.g.augment_node_command = 'C:\\Users\\YourUsername\\AppData\\Roaming\\nvm\\v18.16.0\\node.exe'
+       ```
+     - Alternatively, add Node.js to your system PATH:
+       1. Search for "Environment Variables" in Windows search
+       2. Click "Edit the system environment variables"
+       3. Click "Environment Variables" button
+       4. Under "System variables", find "Path" and click "Edit"
+       5. Click "New" and add the directory containing node.exe
+       6. Click "OK" on all dialogs
+       7. Restart your Developer Command Prompt
+
+4. **Check PATH environment**:
+   - Make sure the directory containing Node.js is in your PATH
+   - You can add it temporarily with:
+   ```bash
+   export PATH=$PATH:/path/to/node/directory
+   ```
+   - Then restart Neovim
+
+5. **Check Neovim's environment**:
+   - Neovim might not inherit your shell's PATH
+   - Try running Neovim from the same terminal where `node` works
+
+6. **Restart after installation**:
+   - If you just installed Node.js, restart your terminal and Neovim
+
+7. **Check detailed logs**:
+   - Run `:Augment log` to see more detailed error information
+   - Look for specific paths or commands that are failing
+
 ### Sign-In Issues
 
 If you have trouble signing in:
@@ -346,6 +412,11 @@ If your workspace folders aren't being recognized:
 Now that you've installed and configured Augment Code, proceed to the next guide to learn how to optimize your workspace context for the best results.
 
 Continue to [Maximizing Augment Code's Understanding of Your Codebase](03-configuring-workspace-context.md).
+
+
+
+
+
 
 
 
