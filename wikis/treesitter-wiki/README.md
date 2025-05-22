@@ -8,7 +8,7 @@ Treesitter is a parsing system that provides accurate syntax highlighting, inden
 
 ## Wiki Guides
 
-This series consists of seven guides that will take you from basic concepts to advanced usage:
+This series consists of eight guides that will take you from basic concepts to advanced usage:
 
 1. [**Introduction to Treesitter**](01-introduction-to-treesitter.md)
    - What is Treesitter and why use it?
@@ -52,6 +52,12 @@ This series consists of seven guides that will take you from basic concepts to a
    - Performance optimization
    - Updating parsers
    - Compatibility with other plugins
+
+8. [**Windows-Specific Treesitter Issues**](08-windows-specific-treesitter-issues.md)
+   - Compiler setup on Windows
+   - Environment and path challenges
+   - Parser-specific Windows issues
+   - Windows-optimized configuration
 
 ## Who These Guides Are For
 

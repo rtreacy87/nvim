@@ -174,6 +174,14 @@ If highlighting is causing performance issues:
 2. Update to the latest Neovim version
 3. Update your Treesitter parsers: `:TSUpdate`
 
+### Windows-Specific Issues
+
+If you're using Windows and experiencing issues with specific parsers like markdown:
+
+1. See [Windows-Specific Treesitter Issues](08-windows-specific-treesitter-issues.md) for detailed solutions
+2. Try using additional Vim regex highlighting as a fallback for problematic parsers
+3. Check that you have the correct compiler environment set up
+
 ## Advanced Highlighting Features
 
 ### Rainbow Parentheses

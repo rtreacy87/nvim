@@ -253,10 +253,10 @@ Only install parsers for languages you actually use:
 ensure_installed = {
   -- Base languages
   'lua', 'vim', 'vimdoc',
-  
+
   -- Your primary languages
   'python', 'javascript', 'typescript',
-  
+
   -- Common file formats
   'json', 'yaml', 'markdown',
 }
@@ -379,9 +379,13 @@ If you encounter issues or have improvements:
 2. Contribute fixes or enhancements via pull requests
 3. Help improve documentation or create tutorials
 
+## Next Steps
+
+If you're using Treesitter on Windows, you might encounter some platform-specific issues. Continue to [Windows-Specific Treesitter Issues](08-windows-specific-treesitter-issues.md) for detailed guidance on resolving Windows-related challenges.
+
 ## Conclusion
 
-Congratulations! You've completed all seven guides in the Treesitter wiki series. You should now have a solid understanding of how to:
+Congratulations! You've completed the main guides in the Treesitter wiki series. You should now have a solid understanding of how to:
 
 1. Understand what Treesitter is and how it works
 2. Install and configure Treesitter in your Neovim setup
