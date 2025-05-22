@@ -11,6 +11,8 @@ This is a customized Neovim configuration based on kickstart.nvim. It provides:
 
 This README will help you understand the key features and how to use them effectively, especially if you're new to Neovim.
 
+> **New to Neovim?** Check out our [Neovim Installation Guide](wikis/neovim-installation-wiki/README.md) for detailed instructions on installing and setting up Neovim on Windows, macOS, Linux, and WSL.
+
 ## About This Configuration
 
 This configuration is based on [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim), a well-documented starting point for Neovim. I've customized it to create a more modular structure where plugins are organized in separate files.
@@ -23,7 +25,7 @@ This configuration is based on [kickstart.nvim](https://github.com/nvim-lua/kick
 - Optional but recommended: A [Nerd Font](https://www.nerdfonts.com/) for icons
 - For Python development: Node.js (for pyright language server)
 
-For detailed installation instructions for Neovim and its dependencies, refer to the [kickstart.nvim documentation](https://github.com/nvim-lua/kickstart.nvim).
+For detailed installation instructions for Neovim and its dependencies, refer to our [Neovim Installation Guide](wikis/neovim-installation-wiki/README.md) which covers all major platforms.
 
 ## Keymaps and Features Guide
 
@@ -206,8 +208,8 @@ This mode is invaluable for tabular data editing and code alignment.
 If `<C-v>` (Ctrl+v) pastes text instead of entering Block Visual mode, your terminal or OS is likely intercepting the keystroke before Neovim can process it. Here are solutions:
 
 1. **Use the alternative keystroke**: Neovim also recognizes `<C-q>` (Ctrl+q) for Block Visual mode
-   
-2. **Use the custom mapping in this config**: 
+
+2. **Use the custom mapping in this config**:
    - `<leader>vb` is mapped to enter Block Visual mode
 
 3. **Configure your terminal**:
