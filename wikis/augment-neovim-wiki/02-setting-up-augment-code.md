@@ -65,6 +65,165 @@ vim.g.augment_workspace_folders = {'/path/to/your/project'}
 
 If you frequently switch between projects, you can set up Augment to prompt you for a workspace folder on startup:
 
+````lua path=/home/rtreacy/.config/nvim/wikis/augment-neovim-wiki/02-setting-up-augment-code.md mode=EDIT
+-- In lua/plugins/augment.lua
+return {
+  'augmentcode/augment.vim',
+  config = function()
+    -- Function to set workspace folder and reload Augment
+    local function set_workspace_folder(path)
+      vim.g.augment_workspace_folders = {path}
+      vim.cmd('Augment reload')
+      print("Augment workspace set to: " .. path)
+    end
+```
+
+**Purpose:** Centralizes the workspace folder setting logic in one place. Takes a directory path as input, sets it as the Augment workspace folder (replacing any existing folders), reloads Augment to apply the change, and shows a confirmation message.
+
+```lua
+    -- Function to add a workspace folder
+    local function add_workspace_folder(path)
+      -- Initialize if nil
+      if not vim.g.augment_workspace_folders then
+        vim.g.augment_workspace_folders = {}
+      end
+
+      -- Check if folder already exists in the list
+      for _, folder in ipairs(vim.g.augment_workspace_folders) do
+        if folder == path then
+          print("Workspace folder already exists: " .. path)
+          return
+        end
+      end
+
+      -- Add the new folder
+      table.insert(vim.g.augment_workspace_folders, path)
+      vim.cmd('Augment reload')
+      print("Added workspace folder: " .. path)
+    end
+```
+
+**Purpose:** Allows adding additional folders to the workspace without replacing existing ones. Checks if the workspace folders list exists, creates it if not, verifies the folder isn't already in the list, adds the new folder, and reloads Augment.
+
+```lua
+    -- Function to remove a workspace folder
+    local function remove_workspace_folder(path)
+      if not vim.g.augment_workspace_folders then
+        print("No workspace folders configured")
+        return
+      end
+
+      -- Find and remove the folder
+      for i, folder in ipairs(vim.g.augment_workspace_folders) do
+        if folder == path then
+          table.remove(vim.g.augment_workspace_folders, i)
+          vim.cmd('Augment reload')
+          print("Removed workspace folder: " .. path)
+          return
+        end
+      end
+
+      print("Workspace folder not found: " .. path)
+    end
+```
+
+**Purpose:** Provides a way to remove specific folders from the workspace. Checks if the workspace folders list exists, searches for the specified folder in the list, removes it if found, and reloads Augment.
+
+```lua
+    -- Function to validate directory exists
+    local function is_valid_directory(path)
+      return path and path ~= '' and vim.fn.isdirectory(path) == 1
+    end
+```
+
+**Purpose:** Provides a clean way to validate directory paths by checking if a path is not empty and exists as a directory.
+
+```lua
+    -- Function to prompt for workspace path
+    local function prompt_for_workspace()
+      local path = vim.fn.input({
+        prompt = 'Enter workspace folder path: ',
+        default = vim.fn.getcwd(),
+        completion = 'dir'
+      })
+
+      if is_valid_directory(path) then
+        set_workspace_folder(path)
+        return true
+      elseif path and path ~= '' then
+        print("Error: Directory '" .. path .. "' does not exist.")
+        return false
+      end
+      return false
+    end
+```
+
+**Purpose:** Handles the user interaction for selecting a workspace. Shows a prompt for entering a workspace path with directory auto-completion, validates the entered path, and sets the workspace if valid.
+
+```lua
+    -- Function to handle workspace initialization
+    local function initialize_workspace()
+      if not vim.g.augment_workspace_folders or #vim.g.augment_workspace_folders == 0 then
+        vim.defer_fn(function()
+          if not prompt_for_workspace() then
+            -- Try again after a short delay
+            vim.defer_fn(initialize_workspace, 100)
+          end
+        end, 100)
+      end
+    end
+```
+
+**Purpose:** Manages the workspace initialization flow. Checks if workspace folders are already set and if not, prompts for a workspace path, retrying if the user enters an invalid path.
+
+```lua
+    -- Initialize workspace on startup
+    initialize_workspace()
+
+    -- Set up global functions for project management
+    _G.SwitchAugmentProject = function(project_path)
+      if is_valid_directory(project_path) then
+        set_workspace_folder(project_path)
+      else
+        print("Error: Directory '" .. project_path .. "' does not exist.")
+      end
+    end
+
+    _G.AddAugmentFolder = function(project_path)
+      if is_valid_directory(project_path) then
+        add_workspace_folder(project_path)
+      else
+        print("Error: Directory '" .. project_path .. "' does not exist.")
+      end
+    end
+
+    _G.RemoveAugmentFolder = function(project_path)
+      remove_workspace_folder(project_path)
+    end
+```
+
+**Purpose:** Exposes our functionality to Neovim commands. These functions are stored in the global `_G` table so they can be accessed from anywhere, each validates inputs and calls the appropriate local function.
+
+```lua
+    -- Create commands to easily call these functions
+    vim.api.nvim_create_user_command('AugmentProject',
+      function(opts) _G.SwitchAugmentProject(opts.args) end,
+      {nargs = 1, complete = 'dir'})
+
+    vim.api.nvim_create_user_command('AugmentAddFolder',
+      function(opts) _G.AddAugmentFolder(opts.args) end,
+      {nargs = 1, complete = 'dir'})
+
+    vim.api.nvim_create_user_command('AugmentRemoveFolder',
+      function(opts) _G.RemoveAugmentFolder(opts.args) end,
+      {nargs = 1})
+  end
+}
+```
+
+**Purpose:** Provides user-friendly commands for managing workspace folders. Creates three commands: `:AugmentProject`, `:AugmentAddFolder`, and `:AugmentRemoveFolder`, each calling the corresponding global function with directory completion enabled where appropriate.
+
+
 ```lua
 -- In lua/plugins/augment.lua
 return {

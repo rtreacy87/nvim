@@ -48,6 +48,15 @@ vim.keymap.set('n', '<leader>tm', ':TableModeToggle<CR>', { desc = '[T]able [M]o
 -- Alternative mapping for block visual mode if Ctrl+v is intercepted by the terminal
 vim.keymap.set('n', '<leader>vb', '<C-v>', { desc = 'Enter Block Visual mode' })
 
+-- Send a chat message in normal mode
+vim.keymap.set('n', '<leader>ac', ':Augment chat<CR>', { desc = 'Augment Chat' })
+-- Send a chat message about selected text in visual mode
+vim.keymap.set('v', '<leader>ac', ':Augment chat<CR>', { desc = 'Augment Chat Selection' })
+-- Start a new chat conversation
+vim.keymap.set('n', '<leader>an', ':Augment chat-new<CR>', { desc = 'Augment New Chat' })
+-- Toggle the chat panel visibility
+vim.keymap.set('n', '<leader>at', ':Augment chat-toggle<CR>', { desc = 'Augment Toggle Chat' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
