@@ -110,6 +110,59 @@ vim.keymap.set('n', '<leader>ff', function()
   require('telescope.builtin').find_files(my_theme)
 end)
 ```
+The result would be a semi-transparent Telescope window taking up most of your screen (90% width, 80% height) with a horizontal layout. The window would have custom border characters for a more refined look, colored file icons, and the preview pane would occupy half the window width. This theme could be applied to any Telescope picker to customize its appearance.
+
+the `layout_stategy` option determines the overall layout of the Telescope window. The `layout_config` option allows you to fine-tune the dimensions and positioning of the window. The `borderchars` option lets you customize the border characters for the prompt, results, and preview panes. The `color_devicons` option enables colored file icons, and the `winblend` option sets the window transparency. The `horizontal` layout strategy is used in this example, but you can also use `vertical`, `center`, or `cursor` depending on your preference. The differences between the different layout strategies are as follows:
+
+- `horizontal`: The results and preview panes are displayed side by side.
+- `vertical`: The results and preview panes are displayed one above the other.
+- `center`: The Telescope window is centered in the middle of the screen.
+- `cursor`: The Telescope window is opened near the cursor.
+
+The `borderchars` option allows you to customize the border characters for the prompt, results, and preview panes. The `color_devicons` option enables colored file icons, and the `winblend` option sets the window transparency, 100 being fully transparent and 0 being fully opaque.
+
+The selected arrays define the border characters for different sections of the Telescope window:
+
+````lua
+borderchars = {
+  prompt = { "─", "│", " ", "│", "┌", "┐", "│", "│" },
+  results = { "─", "│", "─", "│", "├", "┤", "┘", "└" },
+  preview = { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
+},
+````
+
+Each array contains 8 characters that define the borders in this order:
+1. Top border
+2. Right border
+3. Bottom border
+4. Left border
+5. Top-left corner
+6. Top-right corner
+7. Bottom-right corner
+8. Bottom-left corner
+
+If you modify these characters:
+- Using different box-drawing characters would change the visual style of borders
+- Using spaces would make borders invisible
+- Using ASCII characters like `+` and `-` would create simpler borders
+- Using emoji or other special characters would create decorative borders
+
+For example, changing the prompt array to `{ "-", "|", "-", "|", "+", "+", "+", "+" }` would give it simple ASCII borders instead of the current Unicode box-drawing characters.
+
+Each array contains 8 characters that define the border elements:
+
+1. `prompt`: Controls the borders of the input prompt area
+   - Note that the bottom border is a space character, creating an open bottom
+
+2. `results`: Controls the borders of the results list area
+   - Uses special connecting characters (├, ┤) at the top to connect with the prompt
+
+3. `preview`: Controls the borders of the preview pane
+   - Uses standard box-drawing characters to create a complete rectangle
+
+These characters create a cohesive UI where the prompt connects to the results section, and the preview pane appears as a separate box. Modifying these characters would change the visual appearance of the borders in the Telescope interface.
+
+
 
 ### Customizing Colors
 
@@ -200,6 +253,7 @@ require('telescope').setup {
   },
 }
 ```
+In this cases the `smart` option is used, which will truncate the path to fit the available space, but will try to keep the directory structure intact. The `shorten` option will truncate the path to fit the available space, but will not try to keep the directory structure intact. The `absolute` option will display the full path, even if it doesn't fit the available space. The `tail` option will display the last part of the path, even if it doesn't fit.
 
 ### Setting Default Command-line Options
 

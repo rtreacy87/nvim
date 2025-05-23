@@ -262,6 +262,38 @@ You can select multiple items:
 
 This works great with the quickfix list (`Ctrl-q`).
 
+The quickfix list in Neovim is a powerful feature that stores a collection of locations (files and positions) that you can navigate through. Here's what you need to know:
+
+1. **Purpose**: It's designed to help you work through a list of locations, like search results, compiler errors, or linting warnings.
+
+2. **How Telescope uses it**: When you press `Ctrl-q` in Telescope, it sends all your current search results to the quickfix list, allowing you to:
+   - Keep those results available after closing Telescope
+   - Navigate through them systematically
+   - Perform batch operations on them
+
+3. **Basic quickfix commands**:
+   - `:copen` - Open the quickfix window
+   - `:cnext` or `:cn` - Go to next item
+   - `:cprev` or `:cp` - Go to previous item
+   - `:cclose` - Close the quickfix window
+
+4. **Common workflow**:
+   - Search for something in Telescope (e.g., `:Telescope live_grep`)
+   - Press `Ctrl-q` to send results to quickfix
+   - Close Telescope
+   - Use `:cn` and `:cp` to jump between matches
+   - Or open quickfix window with `:copen` to see all matches
+
+This is especially useful for tasks like refactoring, where you need to make similar changes across multiple files.
+
+The quickfix list is a built-in feature of Neovim and doesn't require any additional plugins. It's a core functionality that comes with Neovim/Vim out of the box.
+
+When you use Telescope's `Ctrl-q` command, it's simply interfacing with this native Neovim feature. The quickfix list has been part of Vim for decades and is available in any standard Neovim installation.
+
+You can use all the quickfix commands (`:copen`, `:cnext`, `:cprev`, etc.) immediately without installing anything extra. Telescope just provides a convenient way to populate this list with search results.
+
+
+
 ### Sending to Quickfix List
 
 To send results to the quickfix list:

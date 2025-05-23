@@ -260,7 +260,7 @@ This Neovim configuration includes the following plugins:
 #### File Management
 
 - **neo-tree.nvim**: File explorer with tree view
-- **telescope.nvim**: Fuzzy finder for files, buffers, and more
+- **telescope.nvim**: Fuzzy finder for files, buffers, and more. More details in the [Telescope wiki](wikis/telescope-wiki/README.md).
 - **gitsigns.nvim**: Shows git changes in the sign column
 
 #### Editing Tools

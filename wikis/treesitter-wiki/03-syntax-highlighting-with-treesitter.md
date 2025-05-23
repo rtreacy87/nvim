@@ -147,6 +147,43 @@ To see which highlight group is applied to an element under your cursor:
 
 This is useful for debugging or when customizing highlight groups.
 
+## Troubleshooting Treesitter Highlighting
+
+If `:TSHighlightCapturesUnderCursor` isn't working, there are a few possible issues:
+
+1. **Command name changed**: In newer versions of nvim-treesitter, the command might be `:TSCaptureUnderCursor` instead.
+
+2. **Plugin not loaded properly**: Even though you have Treesitter installed, the commands might not be registered.
+
+3. **Missing module**: The playground module might not be installed, which provides these inspection commands.
+
+Try these solutions:
+
+1. Install the playground module:
+```lua
+require('nvim-treesitter.configs').setup({
+  playground = {
+    enable = true,
+  },
+})
+```
+
+2. Make sure you have the playground plugin installed:
+```lua
+use {
+  'nvim-treesitter/playground',
+  requires = {'nvim-treesitter/nvim-treesitter'}
+}
+```
+
+3. Try the alternative command: `:TSCaptureUnderCursor`
+
+4. Check if Treesitter is properly installed with `:checkhealth nvim-treesitter`
+
+The playground plugin is required for these inspection commands, so that's the most likely missing piece.
+
+
+
 ## Troubleshooting Common Highlighting Issues
 
 ### Missing Highlighting
