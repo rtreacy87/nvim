@@ -8,8 +8,8 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-vim.keymap.set('n', '<C-n>', ':Neotree filesystem reveal left<CR>', { desc = 'Opens the filesystem menu to the left' })
-vim.keymap.set('n', '<C-r>', ':Neotree filesystem reveal right<CR>', { desc = 'Opens the filesystem menu to the right' })
+vim.keymap.set('n', '<leader>nl', ':Neotree filesystem reveal left<CR>', { desc = 'Opens the filesystem menu to the left' })
+vim.keymap.set('n', '<leader>nr', ':Neotree filesystem reveal right<CR>', { desc = 'Opens the filesystem menu to the right' })
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
