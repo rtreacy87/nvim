@@ -6,6 +6,84 @@ Welcome to the Treesitter in Neovim wiki series! This collection of guides will 
 
 Treesitter is a parsing system that provides accurate syntax highlighting, indentation, and code navigation capabilities for multiple programming languages. Unlike traditional regex-based highlighting, Treesitter builds a concrete syntax tree of your code, enabling more accurate and context-aware features.
 
+## Folding and Navigation Cheatsheet
+
+| Category | Command | Description |
+|----------|---------|-------------|
+| **Folding** | `zj` | Move to the next fold |
+|  | `zk` | Move to the previous fold |
+|  | `zc` | Close a fold |
+|  | `zo` | Open a fold |
+|  | `za` | Toggle a fold |
+|  | `zM` | Close all folds |
+|  | `zR` | Open all folds |
+| **Text Objects** | `af` | Around function (outer) |
+|  | `if` | Inside function (inner) |
+|  | `ac` | Around class (outer) |
+|  | `ic` | Inside class (inner) |
+|  | `aa` | Around parameter (outer) |
+|  | `ia` | Inside parameter (inner) |
+| **Navigation** | `]m` | Go to next function start |
+|  | `]]` | Go to next class start |
+|  | `]M` | Go to next function end |
+|  | `][` | Go to next class end |
+|  | `[m` | Go to previous function start |
+|  | `[[` | Go to previous class start |
+|  | `[M` | Go to previous function end |
+|  | `[]` | Go to previous class end |
+
+### Differences Between Inner and Outer Text Objects
+
+- **Inner Text Objects**: Select the content within the function, class, or parameter, excluding the delimiters.
+  ```python
+  def example_function():
+      # Using 'if' (inner function) would select only these lines
+      statement1
+      statement2
+  ```
+
+- **Outer Text Objects**: Select the entire function, class, or parameter, including the delimiters.
+  ```python
+  # Using 'af' (around function) would select this entire block
+  def example_function():
+      statement1
+      statement2
+  ```
+
+- **Inner Parameter**: Select the content within parameter parentheses.
+  ```python
+  function_call(param1, param2)
+  # Using 'ia' on param1 selects just "param1"
+  ```
+
+- **Outer Parameter**: Select the parameter including commas.
+  ```python
+  function_call(param1, param2)
+  # Using 'aa' on param1 selects "param1,"
+  ```
+
+- **Inner Class**: Select the content within the class, excluding the class definition.
+  ```python
+  class ExampleClass:
+      # Using 'ic' (inner class) would select only these lines
+      def __init__(self):
+          self.value = 10
+      
+      def method(self):
+          return self.value
+  ```
+
+- **Outer Class**: Select the entire class, including the class definition.
+  ```python
+  # Using 'ac' (around class) would select this entire block
+  class ExampleClass:
+      def __init__(self):
+          self.value = 10
+      
+      def method(self):
+        return self.value
+  ```
+
 ## Wiki Guides
 
 This series consists of eight guides that will take you from basic concepts to advanced usage:

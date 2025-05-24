@@ -128,6 +128,20 @@ vim.opt.foldlevelstart = 99
 vim.opt.foldenable = true
 ```
 
+Some of these commands are complicated so lets break it down:
+
+- `foldtext`: This option controls how the text for a closed fold is displayed. The expression provided here is a bit complex, but it essentially takes the first line of the fold (`v:foldstart`), replaces tabs with spaces, and appends an ellipsis followed by the last line of the fold (`v:foldend`).
+- `fillchars`: This option controls the characters used for different parts of the UI. Setting `fold` to a space character makes the fold text blend in with the background.
+- `foldlevel`: This option controls the initial fold level. Setting it to 99 means all folds are open by default.
+- `foldlevelstart`: This option controls the fold level when a buffer is first opened. Setting it to 99 means all folds are open when you first open a file.
+- `foldenable`: This option controls whether folds are displayed in collapsed state. Setting it to `true` means folds will be visible according to your `foldlevel` setting. When `false`, all folds are expanded, but you can still use fold commands like `zc` to create folds manually.
+
+#### Difference Between `foldlevel` and `foldlevelstart`
+
+`foldlevel` controls the initial fold level for all folds in the buffer. It determines how many levels of folds are open when you first open a file. For example, if you set `foldlevel` to 1, all folds will be open by default. If you set it to 2, only the top-level folds will be open, and the second-level folds will be closed.
+
+`foldlevelstart` controls the initial fold level for a specific buffer when it is first opened. It allows you to set a different fold level for each buffer. For example, you might want to set `foldlevelstart` to 1 for all buffers, but then manually set `foldlevel` to 2 for a specific buffer to only open the top-level folds.
+
 ### Preserving Folds
 
 To preserve your folds between sessions:

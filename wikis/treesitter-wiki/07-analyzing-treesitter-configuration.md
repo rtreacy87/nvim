@@ -73,6 +73,7 @@ return { -- Highlight, edit, and navigate code
 ### Syntax Highlighting Configuration
 
 ```lua
+
     highlight = {
       enable = true,
       -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
@@ -161,6 +162,35 @@ incremental_selection = {
 ```
 
 **Benefits**: Allows you to intelligently select increasingly larger syntax nodes with repeated keypresses, making code selection much more efficient.
+
+
+#### Explanation of Incremental Selection
+
+The incremental selection feature in Treesitter allows you to progressively select larger portions of code based on the syntax tree structure.
+
+For example, if you have this code:
+
+````lua path=example.lua mode=EXCERPT
+function calculateTotal(items)
+  local sum = 0
+  for i, item in ipairs(items) do
+    sum = sum + item.price * item.quantity
+  end
+  return sum
+end
+````
+
+Here's how it works:
+1. Place your cursor on `sum` inside the loop
+2. Press `<C-space>` (init_selection) - selects just the word `sum`
+3. Press `<C-space>` again (node_incremental) - expands to `sum + item.price * item.quantity`
+4. Press `<C-space>` again - expands to the entire line `sum = sum + item.price * item.quantity`
+5. Press `<C-space>` again - expands to the entire for loop block
+6. Press `<C-space>` again - expands to the entire function body
+7. Press `<C-backspace>` (node_decremental) - shrinks selection back to previous level
+
+"Syntax nodes" are the elements in the code's abstract syntax tree - variables, expressions, statements, blocks, functions, etc. The feature lets you select code based on its semantic structure rather than just characters or lines.
+
 
 ### 3. Text Objects (requires nvim-treesitter-textobjects plugin)
 
