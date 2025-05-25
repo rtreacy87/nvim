@@ -30,6 +30,34 @@ return {
   }
 }
 ```
+Let's break down the optional dependencies:
+
+```lua
+'nvim-telescope/telescope-fzf-native.nvim', build = 'make'
+```
+
+This is the C-compiled extension for Telescope that implements the FZF algorithm in native code. 
+
+The `build = 'make'` parameter is essential as it tells your plugin manager to run the `make` command after downloading the plugin. This compiles the C code into a binary that Telescope can use. Without this compilation step, the extension won't work properly.
+
+This native implementation significantly improves sorting performance compared to the Lua-only implementation, especially for large result sets. If you're on Windows, you might need a different build command as mentioned in the troubleshooting wiki - you could use the cmake option instead:
+
+```lua
+{ 'nvim-telescope/telescope-fzf-native.nvim', 
+  build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' 
+},
+```
+
+```lua
+'nvim-tree/nvim-web-devicons'
+```
+
+This plugin provides filetype icons, enhancing the visual appearance of Telescope. It's optional but recommended for a better user experience. Generally, it's a good idea to have a Nerd Font installed in your terminal for optimal results. You can set it as optional in your plugin configuration:
+
+```lua
+{ 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+```
+
 
 ### Using Packer.nvim
 
@@ -145,21 +173,27 @@ Telescope works best with convenient keymaps. Here's a recommended set:
 ```lua
 -- In your keymaps configuration
 local builtin = require('telescope.builtin')
-
 -- File pickers
-vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Find files' })
-vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Live grep' })
-vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Find buffers' })
-vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Help tags' })
-
--- Git pickers
-vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = 'Git commits' })
-vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = 'Git status' })
-
+vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
+vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
+vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
+-- Text search pickers
+vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
+vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
 -- LSP pickers
-vim.keymap.set('n', '<leader>lr', builtin.lsp_references, { desc = 'LSP references' })
-vim.keymap.set('n', '<leader>ld', builtin.lsp_definitions, { desc = 'LSP definitions' })
+vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<leader>lr', builtin.lsp_references, { desc = '[S]earch [L]SP [R]eferences' })
+vim.keymap.set('n', '<leader>ld', builtin.lsp_definitions, { desc = '[S]earch [L]SP [D]efinitions' })
+-- Navigation pickers
+vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+-- Git pickers
+vim.keymap.set('n', '<leader>sgc', builtin.git_commits, { desc = '[S]earch Git [C]ommits' })
+vim.keymap.set('n', '<leader>sgs', builtin.git_status, { desc = '[S]earch Git [S]tatus' })
 ```
+What is nice about the current mapping is that having everything start with s is that you can just type s and then hit tab to see all the options. 
 
 ## Verifying Your Installation
 
