@@ -56,6 +56,10 @@ vim.keymap.set('v', '<leader>ac', ':Augment chat<CR>', { desc = 'Augment Chat Se
 vim.keymap.set('n', '<leader>an', ':Augment chat-new<CR>', { desc = 'Augment New Chat' })
 -- Toggle the chat panel visibility
 vim.keymap.set('n', '<leader>at', ':Augment chat-toggle<CR>', { desc = 'Augment Toggle Chat' })
+-- Workspace management keymaps
+vim.keymap.set('n', '<leader>ap', ':AugmentProject<Space>', { desc = 'Set Augment Project' })
+vim.keymap.set('n', '<leader>aa', ':AugmentAddFolder<Space>', { desc = 'Add Augment Folder' })
+vim.keymap.set('n', '<leader>ar', ':AugmentRemoveFolder<Space>', { desc = 'Remove Augment Folder' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`

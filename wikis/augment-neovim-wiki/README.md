@@ -6,6 +6,14 @@ Welcome to the Augment Code for Neovim wiki series! This collection of guides wi
 
 Augment Code is an AI-powered coding assistant that provides context-aware code completions and chat capabilities. Unlike generic AI tools, Augment understands your entire codebase, providing suggestions and answers that are relevant to your specific project.
 
+## Command Cheatsheet
+
+## Chat Commands
+- `<leader>ac` - Send chat message (normal mode)
+- `<leader>ac` - Chat about selected text (visual mode)
+- `<leader>an` - Start new chat conversation
+- `<leader>at` - Toggle chat panel visibility
+
 ## Wiki Guides
 
 This series consists of six guides that will take you from installation to advanced usage:

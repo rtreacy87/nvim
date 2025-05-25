@@ -6,6 +6,9 @@ require 'options'
 require 'keymaps'
 require 'lazy-install'
 
+-- Add this before the lazy.nvim setup
+vim.g.augment_workspace_folders = { vim.fn.getcwd() }
+
 -- Load all plugins from the lua/plugins directory
 require('lazy').setup('plugins', {
   ui = {
