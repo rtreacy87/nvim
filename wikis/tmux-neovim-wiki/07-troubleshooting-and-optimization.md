@@ -489,6 +489,50 @@ end
 vim.keymap.set("n", "<leader>up", update_integration_plugins, { desc = "Update integration plugins" })
 ```
 
+## SSH Key Issues
+
+The current configuration for the ssh keys needed to enter the passphrase every time is not ideal.  It's better to have the key automatically added to the ssh agent with a time limit.  This way you only need to enter the passphrase once every so often (e.g., every 8 hours). This allows you to open as many shells as you need without being prompted for the passphrase each time.
+
+```bash
+# Function to start ssh-agent if needed
+start_ssh_agent() {
+    if [ -z "$SSH_AUTH_SOCK" ] || ! ssh-add -l >/dev/null 2>&1; then
+        # Kill any existing ssh-agent processes
+        pkill -u "$USER" ssh-agent 2>/dev/null
+        
+        # Start new ssh-agent
+        eval "$(ssh-agent -t 8h -s)" > /dev/null
+        
+        # Add key if it exists
+        if [ -f "$HOME/.ssh/id_ed25519" ]; then
+            ssh-add -t 8h "$HOME/.ssh/id_ed25519" 2>/dev/null
+        fi
+    fi
+}
+
+# Handle tmux sessions differently
+if [ -n "$TMUX" ]; then
+    # In tmux, try to use the forwarded agent first
+    tmux_auth_sock=$(tmux show-environment 2>/dev/null | grep "^SSH_AUTH_SOCK=" | cut -d= -f2-)
+    if [ -n "$tmux_auth_sock" ] && [ -S "$tmux_auth_sock" ]; then
+        export SSH_AUTH_SOCK="$tmux_auth_sock"
+    fi
+    
+    # Test if the agent is working, if not start a new one
+    if ! ssh-add -l >/dev/null 2>&1; then
+        start_ssh_agent
+        # Update tmux environment with new agent
+        tmux set-environment SSH_AUTH_SOCK "$SSH_AUTH_SOCK"
+    fi
+else
+    # Not in tmux, use regular logic
+    start_ssh_agent
+fi
+
+export PASSWORD_STORE_ENABLE_GIT=true
+export PATH="$HOME/bin:$PATH"
+```
+
 ## Best Practices Summary
 
 ### Configuration Management
