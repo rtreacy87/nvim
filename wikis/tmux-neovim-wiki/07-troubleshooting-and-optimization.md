@@ -574,8 +574,7 @@ This function efficiently manages the SSH agent by:
 
 ```bash
 # Handle tmux sessions differently
-if [ -n "$TMUX" ]; then
-    # In tmux, try to use the forwarded agent first
+if [ -n "$TMUX" ]; then # In tmux, try to use the forwarded agent first
     tmux_auth_sock=$(tmux show-environment 2>/dev/null | grep "^SSH_AUTH_SOCK=" | cut -d= -f2-)
     if [ -n "$tmux_auth_sock" ] && [ -S "$tmux_auth_sock" ]; then
         export SSH_AUTH_SOCK="$tmux_auth_sock"
