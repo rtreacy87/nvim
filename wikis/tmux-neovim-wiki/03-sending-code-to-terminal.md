@@ -66,11 +66,64 @@ vim.g.slime_dont_ask_default = 1
 vim.g.slime_preserve_curpos = 1
 
 -- Key mappings
-vim.keymap.set("n", "<leader>ss", "<Plug>SlimeSendCell", { desc = "Send cell" })
-vim.keymap.set("v", "<leader>s", "<Plug>SlimeRegionSend", { desc = "Send selection" })
-vim.keymap.set("n", "<leader>sl", "<Plug>SlimeLineSend", { desc = "Send line" })
-vim.keymap.set("n", "<leader>sp", "<Plug>SlimeParagraphSend", { desc = "Send paragraph" })
+vim.keymap.set("n", "<leader>vssc", "<Plug>SlimeSendCell", { desc = "[V]im [S]lime [S]end [C]ell" })
+vim.keymap.set("v", "<leader>vss", "<Plug>SlimeRegionSend", { desc = "[V]im [S]lime [S]end" })
+vim.keymap.set("n", "<leader>vssl", "<Plug>SlimeLineSend", { desc = "[V]im [S]lime [S]end [L]ine" })
+vim.keymap.set("n", "<leader>vssp", "<Plug>SlimeParagraphSend", { desc = "[V]im [S]lime [S]end [P]aragraph" })
 ```
+# Understanding vim-slime Commands
+
+This configuration sets up vim-slime to send code from Neovim to a tmux terminal:
+
+- `vim.g.slime_target = "tmux"` - Configures vim-slime to send code to tmux panes
+- `vim.g.slime_default_config` - Sets default target to the last active tmux pane
+- `socket_name = "default"` - Specifies the tmux socket name
+- `target_pane = "{last}"` - Sends code to the last active pane, so if you switch panes, it will send to the new last active pane.
+- `vim.g.slime_dont_ask_default = 1` - Prevents confirmation prompts when sending code
+- `vim.g.slime_preserve_curpos = 1` - Keeps your cursor in the same position after sending code
+
+The key mappings provide different ways to send code:
+- `<leader>vssc` - Sends a "cell" (code between delimiters like `# %%`)
+- `<leader>vss` - Sends visually selected code
+- `<leader>vssl` - Sends the current line
+- `<leader>vssp` - Sends the current paragraph
+
+# Example Python Workflow
+
+1. **Setup**: Open a tmux session with two panes:
+   - Left pane: Neovim with your Python script
+   - Right pane: Python interpreter
+
+2. **Daily workflow**:
+
+```python
+# %% Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# %% Load data
+df = pd.read_csv('data.csv')
+
+# %% Explore data
+print(df.head())
+print(df.describe())
+
+# %% Create visualization
+plt.figure(figsize=(10, 6))
+df['value'].plot()
+plt.title('Data Visualization')
+plt.show()
+```
+
+3. **Using the commands**:
+   - Place cursor in the imports cell, press `<leader>vssc` to send just that cell
+   - Move to the "Load data" cell, press `<leader>vssc` to execute it
+   - If you need to modify a visualization, make changes and use `<leader>vssc` again
+   - To send just a specific line, place cursor on it and press `<leader>vssl`
+   - To send a custom selection, visually select lines and press `<leader>vss`
+
+This workflow lets you iteratively develop and test code sections without rerunning the entire script, perfect for data analysis and exploration.
+
 
 ### Advanced vim-slime Configuration
 

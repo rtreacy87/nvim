@@ -136,6 +136,57 @@ If a plugin installs but doesn't work:
 2. Look for error messages when starting tmux with `tmux -v`
 3. Verify your tmux version meets the plugin's requirements
 
+### SSH Key Request with Every Shell
+
+If you're prompted for an SSH key passphrase every time you open a new shell, it's not related to TPM. This is a general SSH configuration issue. You can resolve it by:
+
+```bash
+# Start SSH agent automatically
+if [ -z "$SSH_AUTH_SOCK" ]; then
+   # Check if ssh-agent is already running
+   ps -aux | grep ssh-agent | grep -v grep > /dev/null
+   if [ $? -ne 0 ]; then
+      eval "$(ssh-agent -s)" > /dev/null
+   fi
+fi
+
+# Add your SSH key to the agent automatically
+if [ -f "$HOME/.ssh/id_ed25519" ]; then
+   ssh-add -l | grep "$HOME/.ssh/id_ed25519" > /dev/null
+   if [ $? -ne 0 ]; then
+      ssh-add $HOME/.ssh/id_ed25519 2>/dev/null
+   fi
+fi
+
+export PASSWORD_STORE_ENABLE_GIT=true
+export PATH="$HOME/bin:$PATH"
+```
+
+This can be corrected by adding a timer to the SSH agent and key addition. Then the key will only need to be entered once every 8 hours (or whatever time you set).
+
+```bash
+# Start SSH agent automatically
+if [ -z "$SSH_AUTH_SOCK" ]; then
+   # Check if ssh-agent is already running
+   ps -aux | grep ssh-agent | grep -v grep > /dev/null
+   if [ $? -ne 0 ]; then
+      eval "$(ssh-agent -t 8h -s)" > /dev/null
+   fi
+fi
+
+# Add your SSH key to the agent automatically
+if [ -f "$HOME/.ssh/id_ed25519" ]; then
+   ssh-add -l | grep "$HOME/.ssh/id_ed25519" > /dev/null
+   if [ $? -ne 0 ]; then
+      ssh-add -t 8h $HOME/.ssh/id_ed25519 2>/dev/null
+   fi
+fi
+
+export PASSWORD_STORE_ENABLE_GIT=true
+export PATH="$HOME/bin:$PATH"
+```
+
+
 ## Advanced Usage
 
 ### Custom Plugin Locations

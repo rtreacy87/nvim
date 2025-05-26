@@ -58,125 +58,145 @@ Modes in Neovim:
 
 #### General Keymaps
 
-| Keybinding | Description |
-|------------|-------------|
-| `<Esc>` | Clear search highlighting |
+| Keybinding  | Description                    |
+|-------------|--------------------------------|
+| `<Esc>`     | Clear search highlighting      |
 | `<leader>e` | Show diagnostic error messages |
-| `<leader>q` | Open diagnostic quickfix list |
+| `<leader>q` | Open diagnostic quickfix list  |
 
 #### Window Management
 
-| Keybinding | Description |
-|------------|-------------|
-| `<C-h>` | Move focus to the left window |
-| `<C-j>` | Move focus to the lower window |
-| `<C-k>` | Move focus to the upper window |
-| `<C-l>` | Move focus to the right window |
-| `<leader>oh` | Open a horizontal split |
-| `<leader>ov` | Open a vertical split |
-| `<leader>cw` | Close the current window |
+| Keybinding   | Description                    |
+|--------------|--------------------------------|
+| `<C-h>`      | Move focus to the left window  |
+| `<C-j>`      | Move focus to the lower window |
+| `<C-k>`      | Move focus to the upper window |
+| `<C-l>`      | Move focus to the right window |
+| `<leader>oh` | Open a horizontal split        |
+| `<leader>ov` | Open a vertical split          |
+| `<leader>cw` | Close the current window       |
 
 #### File Navigation
 
-| Keybinding | Description |
-|------------|-------------|
-| `<C-n>` | Open file explorer on the left |
+|| Keybinding | Description ||
+|---------|---------------------------------|
+| `<C-n>` | Open file explorer on the left  |
 | `<C-r>` | Open file explorer on the right |
 
 #### LSP (Language Server Protocol) Keymaps
 
 These keybindings are available when a Language Server is active:
 
-| Keybinding | Description |
-|------------|-------------|
-| `gd` | Go to definition |
-| `gr` | Find references |
-| `gI` | Go to implementation |
-| `gD` | Go to declaration |
-| `<leader>D` | Go to type definition |
-| `<leader>ds` | Document symbols |
-| `<leader>ws` | Workspace symbols |
-| `<leader>rn` | Rename symbol |
-| `<leader>ca` | Code action |
-| `K` | Show hover documentation |
+| Keybinding   | Description              |
+|--------------|--------------------------|
+| `gd`         | Go to definition         |
+| `gr`         | Find references          |
+| `gI`         | Go to implementation     |
+| `gD`         | Go to declaration        |
+| `<leader>D`  | Go to type definition    |
+| `<leader>ds` | Document symbols         |
+| `<leader>ws` | Workspace symbols        |
+| `<leader>rn` | Rename symbol            |
+| `<leader>ca` | Code action              |
+| `K`          | Show hover documentation |
 
 #### Telescope Keymaps
 
 Telescope is a powerful fuzzy finder:
 
-| Keybinding | Description |
-|------------|-------------|
-| `<leader>sh` | Search help tags |
-| `<leader>sk` | Search keymaps |
-| `<leader>sf` | Search files |
-| `<leader>ss` | Search select telescope |
-| `<leader>sw` | Search current word |
-| `<leader>sg` | Search by grep |
-| `<leader>sd` | Search diagnostics |
-| `<leader>sr` | Resume previous search |
-| `<leader>s.` | Search recent files |
-| `<leader><leader>` | Find existing buffers |
-| `<leader>/` | Fuzzy search in current buffer |
-| `<leader>s/` | Search in open files |
-| `<leader>sn` | Search Neovim config files |
+| Keybinding         | Description                    |
+|--------------------|--------------------------------|
+| `<leader>sh`       | Search help tags               |
+| `<leader>sk`       | Search keymaps                 |
+| `<leader>sf`       | Search files                   |
+| `<leader>ss`       | Search select telescope        |
+| `<leader>sw`       | Search current word            |
+| `<leader>sg`       | Search by grep                 |
+| `<leader>sd`       | Search diagnostics             |
+| `<leader>sr`       | Resume previous search         |
+| `<leader>s.`       | Search recent files            |
+| `<leader><leader>` | Find existing buffers          |
+| `<leader>/`        | Fuzzy search in current buffer |
+| `<leader>s/`       | Search in open files           |
+| `<leader>sn`       | Search Neovim config files     |
 
 #### Terminal Keymaps
 
-| Keybinding | Description |
-|------------|-------------|
+| Keybinding   | Description            |
+|--------------|------------------------|
 | `<leader>ot` | Open a terminal window |
-| `<Esc><Esc>` | Exit terminal mode |
+| `<Esc><Esc>` | Exit terminal mode     |
 
 #### Markdown Keymaps
 
-| Keybinding | Description |
-|------------|-------------|
-| `<leader>om` | Open markdown preview |
-| `<leader>cm` | Close markdown preview |
+| Keybinding   | Description                                     |
+|--------------|-------------------------------------------------|
+| `<leader>om` | Open markdown preview                           |
+| `<leader>cm` | Close markdown preview                          |
 | `<leader>tm` | Toggle table mode (for editing markdown tables) |
 
 ### Split Pane Navigation
 
 Navigating between split panes in Neovim is essential for efficient workflow:
 
-| Keybinding | Description |
-|------------|-------------|
-| `<C-h>` | Move focus to the left split |
-| `<C-j>` | Move focus to the down split |
-| `<C-k>` | Move focus to the up split |
-| `<C-l>` | Move focus to the right split |
-| `<C-\>` | Move to previous split (when using tmux) |
+| Keybinding | Description                              |
+|------------|------------------------------------------|
+| `<C-h>`    | Move focus to the left split             |
+| `<C-j>`    | Move focus to the down split             |
+| `<C-k>`    | Move focus to the up split               |
+| `<C-l>`    | Move focus to the right split            |
+| `<C-\>`    | Move to previous split (when using tmux) |
 
 #### Creating and Managing Splits
 
-| Keybinding | Description |
-|------------|-------------|
+| Keybinding   | Description             |
+|--------------|-------------------------|
 | `<leader>oh` | Open a horizontal split |
-| `<leader>ov` | Open a vertical split |
+| `<leader>ov` | Open a vertical split   |
 | `<leader>cw` | Close the current split |
 
 #### Resizing Splits
 
-| Keybinding | Description |
-|------------|-------------|
-| `<C-w>>` | Increase width of current split |
-| `<C-w><` | Decrease width of current split |
-| `<C-w>+` | Increase height of current split |
-| `<C-w>-` | Decrease height of current split |
-| `<C-w>=` | Make all splits equal size |
+| Keybinding | Description                      |
+|------------|----------------------------------|
+| `<C-w>>`   | Increase width of current split  |
+| `<C-w><`   | Decrease width of current split  |
+| `<C-w>+`   | Increase height of current split |
+| `<C-w>-`   | Decrease height of current split |
+| `<C-w>=`   | Make all splits equal size       |
 
 These keybindings make it easy to work with multiple files side by side, compare code, or reference documentation while coding.
+
+#### Opening Files in Splits from Telescope
+
+When using Telescope, you can open files in different split configurations without leaving the Telescope window:
+
+| Keybinding | Description                      |
+|------------|----------------------------------|
+| `<CR>`     | Open file in current window      |
+| `<C-x>`    | Open file in horizontal split    |
+| `<C-v>`    | Open file in vertical split      |
+| `<C-t>`    | Open file in new tab             |
+| `<C-q>`    | Send all results to quickfix list|
+
+These keybindings work in both normal and insert mode while the Telescope window is active.
+
+For example, to find a file and open it in a vertical split:
+1. Press `<leader>sf` to open the file finder
+2. Type to search for your file
+3. Navigate to the desired file with `<C-j>` and `<C-k>`
+4. Press `<C-v>` to open it in a vertical split
 
 ### Visual Mode Selection
 
 Neovim offers multiple visual selection modes for different editing needs:
 
-| Mode | How to Enter | Description |
-|------|-------------|-------------|
-| Character-wise Visual | `v` | Select characters one by one |
-| Line-wise Visual | `V` (capital V) | Select entire lines |
-| Block-wise Visual | `<C-v>` (Ctrl+v) | Select in a rectangular block pattern |
-| Select mode | `gh` | Similar to visual but with different behavior |
+| Mode                  | How to Enter     | Description                                   |
+|-----------------------|------------------|-----------------------------------------------|
+| Character-wise Visual | `v`              | Select characters one by one                  |
+| Line-wise Visual      | `V` (capital V)  | Select entire lines                           |
+| Block-wise Visual     | `<C-v>` (Ctrl+v) | Select in a rectangular block pattern         |
+| Select mode           | `gh`             | Similar to visual but with different behavior |
 
 #### Block Visual Mode Tips
 
@@ -224,12 +244,12 @@ If you're using a remote connection (SSH) or a terminal multiplexer like tmux, y
 
 #### Augment Code Keybindings
 
-| Keybinding | Description |
-|------------|-------------|
-| `<Tab>` | Accept Augment code suggestion |
+| Keybinding   | Description                                                            |
+|--------------|------------------------------------------------------------------------|
+| `<Tab>`      | Accept Augment code suggestion                                         |
 | `<leader>ac` | Start Augment chat (normal mode) or chat about selection (visual mode) |
-| `<leader>an` | Start a new Augment chat conversation |
-| `<leader>at` | Toggle the Augment chat panel |
+| `<leader>an` | Start a new Augment chat conversation                                  |
+| `<leader>at` | Toggle the Augment chat panel                                          |
 
 ### Installed Plugins
 
