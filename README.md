@@ -223,6 +223,12 @@ Common operations in Block Visual mode:
 
 This mode is invaluable for tabular data editing and code alignment.
 
+Inserting text at the beginning of each line in a block selection:
+1. Select the block at the beginning of each line
+2. Press `I` to enter insert mode
+3. Type the text you want to insert
+4. Press `<Esc>` to exit insert mode
+
 #### Troubleshooting Block Visual Mode
 
 If `<C-v>` (Ctrl+v) pastes text instead of entering Block Visual mode, your terminal or OS is likely intercepting the keystroke before Neovim can process it. Here are solutions:
