@@ -61,6 +61,62 @@ vim.keymap.set('n', '<leader>ap', ':AugmentProject<Space>', { desc = 'Set Augmen
 vim.keymap.set('n', '<leader>aa', ':AugmentAddFolder<Space>', { desc = 'Add Augment Folder' })
 vim.keymap.set('n', '<leader>ar', ':AugmentRemoveFolder<Space>', { desc = 'Remove Augment Folder' })
 
+-- Insert bash code block with content from register
+vim.keymap.set('n', '<leader>icb', function()
+  -- Get content from the default register
+  local content = vim.fn.getreg '"'
+  -- Split content by newlines
+  local content_lines = vim.split(content, '\n')
+
+  -- Create the code block with the content
+  local lines = { '```bash' }
+  -- Add each line of content separately
+  for _, line in ipairs(content_lines) do
+    table.insert(lines, line)
+  end
+  --delete the emptyline before adding the ```
+  table.remove(lines, #lines)
+  table.insert(lines, '```')
+  table.insert(lines, '')
+
+  -- Insert at current position
+  vim.api.nvim_put(lines, 'l', true, true)
+end, { desc = '[I]nsert [C]ode [B]ash' })
+
+vim.keymap.set('n', '<leader>icp', function()
+  -- Get content from the default register
+  local content = vim.fn.getreg '"'
+  -- Split content by null bytes to get proper lines
+  local content_lines = vim.split(content, '\n')
+  -- Create the code block with the content
+  local lines = { '```python' }
+  -- Add each line of content separately
+  for _, line in ipairs(content_lines) do
+    table.insert(lines, line)
+  end
+  --delete the emptyline before adding the ```
+  table.remove(lines, #lines)
+  -- Add closing fence
+  table.insert(lines, '```')
+  table.insert(lines, '')
+  -- Insert at current position
+  vim.api.nvim_put(lines, 'l', true, true)
+end, { desc = '[I]nsert [C]ode [P]ython' })
+
+vim.keymap.set('n', '<leader>isb', function()
+  -- Create the empty code block
+  local lines = { '```bash', '', '', '', '```' }
+  -- Insert at current position
+  vim.api.nvim_put(lines, 'l', true, true)
+end, { desc = '[I]nsert [S]plit [B]ash' })
+
+vim.keymap.set('n', '<leader>isb', function()
+  -- Create the empty code block
+  local lines = { '```bash', '', '', '', '```' }
+  -- Insert at current position
+  vim.api.nvim_put(lines, 'l', true, true)
+end, { desc = '[I]nsert [S]plit [P]ython' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
