@@ -105,14 +105,14 @@ end, { desc = '[I]nsert [C]ode [P]ython' })
 
 vim.keymap.set('n', '<leader>isb', function()
   -- Create the empty code block
-  local lines = { '```bash', '', '', '', '```' }
+  local lines = { '```', '', '', '', '```bash' }
   -- Insert at current position
   vim.api.nvim_put(lines, 'l', true, true)
 end, { desc = '[I]nsert [S]plit [B]ash' })
 
 vim.keymap.set('n', '<leader>isb', function()
   -- Create the empty code block
-  local lines = { '```bash', '', '', '', '```' }
+  local lines = { '```', '', '', '', '```python' }
   -- Insert at current position
   vim.api.nvim_put(lines, 'l', true, true)
 end, { desc = '[I]nsert [S]plit [P]ython' })
