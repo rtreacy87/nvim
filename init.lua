@@ -4,10 +4,11 @@ vim.g.have_nerd_font = true
 
 require 'options'
 require 'keymaps'
+require 'code_block_keymaps'
 require 'lazy-install'
 
 -- Add this before the lazy.nvim setup
-vim.g.augment_workspace_folders = { vim.fn.getcwd(), '~/.config/nvim/'}
+vim.g.augment_workspace_folders = { vim.fn.getcwd(), '~/.config/nvim/' }
 
 -- Load all plugins from the lua/plugins directory
 require('lazy').setup('plugins', {
