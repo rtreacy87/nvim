@@ -83,10 +83,10 @@ A list of custom keymaps to insert and copy markdown code blocks can be found in
 
 #### File Navigation
 
-|| Keybinding | Description ||
-|---------|---------------------------------|
-| `<C-n>` | Open file explorer on the left  |
-| `<C-r>` | Open file explorer on the right |
+| Keybinding | Description                     |
+|------------|---------------------------------|
+| `<C-n>`    | Open file explorer on the left  |
+| `<C-r>`    | Open file explorer on the right |
 
 #### LSP (Language Server Protocol) Keymaps
 
