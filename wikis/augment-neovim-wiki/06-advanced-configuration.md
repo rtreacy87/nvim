@@ -53,10 +53,33 @@ vim.keymap.set('i', '<C-y>', '<cmd>call augment#Accept()<cr>')
 
 -- Chat commands
 vim.keymap.set('n', '<leader>ac', ':Augment chat<CR>')
-vim.keymap.set('v', '<leader>ac', ':Augment chat<CR>')
+vim.keymap.set('v', '<leader>ac', ':Augment chat<CR>')  -- This works with visual selections!
 vim.keymap.set('n', '<leader>an', ':Augment chat-new<CR>')
 vim.keymap.set('n', '<leader>at', ':Augment chat-toggle<CR>')
 ```
+
+### Using Visual Mode with Augment Chat
+
+One of Augment's most powerful features is its ability to automatically include selected text in chat messages:
+
+```vim
+-- How to use visual mode with Augment:
+-- 1. Select text in visual mode (v, V, or Ctrl-v)
+-- 2. Type :Augment chat followed by your question
+-- 3. Augment automatically includes the selected text
+
+-- Example workflow:
+-- 1. Select a function with V (line-wise visual mode)
+-- 2. Type: :Augment chat How can I optimize this function?
+-- 3. Augment will analyze the selected function and provide specific advice
+
+-- Visual mode types:
+-- v       - character-wise selection (precise)
+-- V       - line-wise selection (entire lines)
+-- Ctrl-v  - block-wise selection (rectangular blocks)
+```
+
+**Pro tip**: If you're having issues with visual mode selection, see the [Visual Mode Selection Not Working](#visual-mode-selection-not-working) section in the troubleshooting guide below.
 
 ### Performance Optimization Tips
 
@@ -167,6 +190,99 @@ require('which-key').register({
 2. Try starting a new conversation: `:Augment chat-new`
 3. Check for errors: `:Augment log`
 4. Make sure your workspace is properly indexed
+
+### Visual Mode Selection Not Working
+
+**Issue**: Augment chat not seeing highlighted text when in visual mode
+
+This is a common issue where Augment doesn't include your selected text in chat messages.
+
+**How Visual Mode Selection Should Work**:
+1. Select text in visual mode (`v`, `V`, or `Ctrl-v`)
+2. Type `:Augment chat` followed by your question
+3. Augment automatically includes the selected text in your message
+
+**Solutions**:
+
+#### 1. **Verify Your Visual Mode Selection**
+```vim
+" Make sure you're actually in visual mode:
+" - You should see -- VISUAL -- in the status line
+" - The selected text should be highlighted
+" - Try these visual modes:
+"   v       - character-wise selection
+"   V       - line-wise selection
+"   Ctrl-v  - block-wise selection
+```
+
+#### 2. **Use the Range Command Method**
+```vim
+" Alternative approach that explicitly uses the selection:
+" 1. Select text in visual mode
+" 2. Type : (you'll see :'<,'> appear)
+" 3. Complete with: Augment chat Your question here
+"
+" This tells Vim to explicitly use the visual selection range
+```
+
+#### 3. **Check for Plugin Conflicts**
+```vim
+" Some plugins may interfere with visual mode
+" Test with minimal config:
+nvim --clean
+
+" Then manually test Augment to isolate the issue
+" Common conflicting plugins:
+" - Custom visual mode mappings
+" - Text object plugins
+" - Plugins that override the : command in visual mode
+```
+
+#### 4. **Verify Selection Timing**
+```vim
+" Make sure selection is active when running command:
+" 1. Select text and keep it selected
+" 2. Don't press Escape or move cursor
+" 3. Immediately type :Augment chat
+" 4. If selection disappears, re-select and try again
+```
+
+#### 5. **Test with Simple Examples**
+```vim
+" Test with a simple function:
+function test() {
+    return "hello";
+}
+
+" 1. Select the entire function with V (line-wise)
+" 2. Type: :Augment chat What does this function do?
+" 3. Check if Augment mentions the function in its response
+```
+
+#### 6. **Check Augment Logs**
+```vim
+" After trying to use visual selection, check logs:
+:Augment log
+
+" Look for messages like:
+" "Making chat request with selected_text="your selected text""
+" If selected_text is empty, the selection wasn't captured
+```
+
+#### 7. **Alternative Workaround**
+```vim
+" If visual mode selection still doesn't work:
+" 1. Copy your selection to clipboard: y
+" 2. Use regular chat: :Augment chat
+" 3. Paste the code in your question manually
+" 4. This isn't ideal but works as a temporary solution
+```
+
+**Best Practices for Visual Selections**:
+- Select complete code blocks (entire functions, if statements, etc.)
+- Use `V` (line-wise) for complete lines
+- Use `v` (character-wise) for precise selections
+- Combine with specific questions: "What does this function do?" rather than just "Explain this"
 
 ## Viewing and Understanding Logs
 
