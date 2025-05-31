@@ -35,6 +35,25 @@ curl -X POST http://127.0.0.1:11434/api/embeddings \
 
 ### Install VectorCode CLI
 
+#### Installation Options Comparison
+
+| Feature | Option 1: pipx | Option 2: pip | Option 3: CPU-only | Option 4: Development | Option 5: Additional Features |
+|---------|---------------|--------------|-------------------|---------------------|----------------------------|
+| **Installation Method** | pipx | pip | pipx with CPU flags | Git + pip (editable) | pipx with extras |
+| **Isolation** | ✅ Isolated environment | ❌ User Python environment | ✅ Isolated environment | ❌ Development environment | ✅ Isolated environment |
+| **CUDA Support** | ✅ Default | ✅ Default | ❌ CPU only | ✅ Default | ✅ Default |
+| **LSP Support** | ❌ Not included | ❌ Not included | ❌ Not included | ❌ Not included | ✅ Optional |
+| **MCP Support** | ❌ Not included | ❌ Not included | ❌ Not included | ❌ Not included | ✅ Optional |
+| **Latest Features** | ❌ Release version | ❌ Release version | ❌ Release version | ✅ Latest code | ❌ Release version |
+| **Ease of Updates** | ✅ Easy (`pipx upgrade`) | ⚠️ Moderate | ✅ Easy (with flags) | ⚠️ Git pull required | ✅ Easy (`pipx upgrade`) |
+| **Best For** | Most users | Simple setup | Limited GPU resources | Contributors/developers | Advanced features |
+
+**Notes:**
+- Option 1 (pipx) is recommended for most users due to environment isolation
+- Option 3 is ideal for systems without GPU or to avoid CUDA dependencies
+- Option 4 gives you the latest unreleased features but may be less stable
+- Option 5 adds LSP support for faster queries and/or MCP for enhanced model context
+
 #### Option 1: Using pipx (Recommended)
 
 ```bash
