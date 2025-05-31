@@ -521,20 +521,27 @@ vim.api.nvim_create_autocmd("BufWritePost", {
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     vim.defer_fn(function()
-      local function check_service(url, name)
-        vim.system({ "curl", "-s", url }, {
-          on_exit = function(obj)
-            if obj.code == 0 then
-              vim.notify(name .. " is running", vim.log.levels.INFO)
-            else
-              vim.notify(name .. " is not responding", vim.log.levels.WARN)
-            end
+      -- Check Ollama
+      vim.system({ "curl", "-s", "http://127.0.0.1:11434/api/tags" }, {
+        on_exit = function(obj)
+          if obj.code == 0 then
+            vim.notify("Ollama is running", vim.log.levels.INFO)
+          else
+            vim.notify("Ollama is not responding", vim.log.levels.WARN)
           end
-        })
-      end
-      
-      check_service("http://127.0.0.1:11434/api/tags", "Ollama")
-      check_service("http://localhost:8000/api/v1/heartbeat", "ChromaDB")
+        end
+      })
+
+      -- Check VectorCode
+      vim.system({ "vectorcode", "check" }, {
+        on_exit = function(obj)
+          if obj.code == 0 then
+            vim.notify("VectorCode is working", vim.log.levels.INFO)
+          else
+            vim.notify("VectorCode is not working", vim.log.levels.WARN)
+          end
+        end
+      })
     end, 1000)
   end,
 })
@@ -574,12 +581,18 @@ log_error() {
 # Check prerequisites
 check_prerequisites() {
     log_info "Checking prerequisites..."
-    
+
     command -v nvim >/dev/null 2>&1 || { log_error "Neovim is required but not installed."; exit 1; }
-    command -v python3 >/dev/null 2>&1 || { log_error "Python 3 is required but not installed."; exit 1; }
-    command -v docker >/dev/null 2>&1 || { log_error "Docker is required but not installed."; exit 1; }
+    command -v python3 >/dev/null 2>&1 || { log_error "Python 3.11+ is required but not installed."; exit 1; }
     command -v curl >/dev/null 2>&1 || { log_error "curl is required but not installed."; exit 1; }
-    
+
+    # Check Python version
+    python_version=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+    if [[ $(echo "$python_version >= 3.11" | bc -l) -eq 0 ]]; then
+        log_error "Python 3.11+ is required. Found: $python_version"
+        exit 1
+    fi
+
     log_info "✅ Prerequisites check passed"
 }
 
@@ -607,28 +620,14 @@ install_ollama() {
     log_info "✅ Ollama setup complete"
 }
 
-# Setup ChromaDB
-setup_chromadb() {
-    log_info "Setting up ChromaDB..."
-    
-    # Create data directory
-    mkdir -p ~/.local/share/chromadb
-    
-    # Stop existing container
-    docker stop chromadb 2>/dev/null || true
-    docker rm chromadb 2>/dev/null || true
-    
-    # Start ChromaDB
-    docker run -d \
-        --name chromadb \
-        -p 8000:8000 \
-        -v ~/.local/share/chromadb:/chroma/chroma \
-        chromadb/chroma:latest
-    
-    # Wait for startup
-    sleep 10
-    
-    log_info "✅ ChromaDB setup complete"
+# Setup VectorCode data directory
+setup_vectorcode_data() {
+    log_info "Setting up VectorCode data directory..."
+
+    # Create data directory (VectorCode will use this for ChromaDB)
+    mkdir -p ~/.local/share/vectorcode/chromadb
+
+    log_info "✅ VectorCode data directory setup complete"
 }
 
 # Install VectorCode
@@ -640,7 +639,7 @@ install_vectorcode() {
     python3 -m pipx ensurepath
     pipx install vectorcode
     
-    # Create configuration
+    # Create optional configuration for Ollama embeddings
     mkdir -p ~/.config/vectorcode
     cat > ~/.config/vectorcode/config.json << 'EOF'
 {
@@ -649,25 +648,8 @@ install_vectorcode() {
     "url": "http://127.0.0.1:11434/api/embeddings",
     "model_name": "nomic-embed-text"
   },
-  "vector_store": "chromadb",
-  "chromadb_config": {
-    "host": "localhost",
-    "port": 8000,
-    "persist_directory": "~/.local/share/chromadb"
-  },
-  "chunk_size": 512,
-  "chunk_overlap": 50,
-  "supported_extensions": [
-    ".py", ".js", ".ts", ".lua", ".go", ".rs", 
-    ".java", ".cpp", ".c", ".h", ".hpp", ".cc",
-    ".md", ".txt", ".json", ".yaml", ".yml",
-    ".sh", ".bash", ".zsh", ".fish"
-  ],
-  "ignore_patterns": [
-    "node_modules/", ".git/", "__pycache__/", "*.pyc",
-    ".DS_Store", "target/", "build/", "dist/",
-    ".venv/", "venv/"
-  ]
+  "chunk_size": 2500,
+  "overlap_ratio": 0.2
 }
 EOF
     
@@ -692,26 +674,26 @@ setup_neovim() {
 # Test installation
 test_installation() {
     log_info "Testing installation..."
-    
+
     # Test Ollama
     if curl -s http://127.0.0.1:11434/api/tags >/dev/null; then
         log_info "✅ Ollama is responding"
     else
         log_error "❌ Ollama is not responding"
     fi
-    
-    # Test ChromaDB
-    if curl -s http://localhost:8000/api/v1/heartbeat >/dev/null; then
-        log_info "✅ ChromaDB is responding"
-    else
-        log_error "❌ ChromaDB is not responding"
-    fi
-    
+
     # Test VectorCode
-    if vectorcode --version >/dev/null 2>&1; then
+    if vectorcode version >/dev/null 2>&1; then
         log_info "✅ VectorCode is working"
     else
         log_error "❌ VectorCode is not working"
+    fi
+
+    # Test VectorCode functionality
+    if vectorcode check >/dev/null 2>&1; then
+        log_info "✅ VectorCode functionality is working"
+    else
+        log_error "❌ VectorCode functionality is not working"
     fi
 }
 
@@ -719,16 +701,16 @@ test_installation() {
 main() {
     check_prerequisites
     install_ollama
-    setup_chromadb
+    setup_vectorcode_data
     install_vectorcode
     setup_neovim
     test_installation
-    
+
     log_info "🎉 RAGS setup complete!"
     log_info "Next steps:"
     log_info "1. Copy the Neovim plugin configurations"
     log_info "2. Run :Lazy sync in Neovim"
-    log_info "3. Index your first project with: vectorcode vectorise --project_root ."
+    log_info "3. Index your first project with: cd /path/to/project && vectorcode init && vectorcode vectorise ."
 }
 
 main "$@"

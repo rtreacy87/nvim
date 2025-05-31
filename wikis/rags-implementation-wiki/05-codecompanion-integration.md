@@ -79,20 +79,20 @@ return {
             ["codebase"] = {
               callback = function(query)
                 -- Execute VectorCode query and return results
-                local handle = io.popen("vectorcode query '" .. query .. "' --output json 2>/dev/null")
+                local handle = io.popen("vectorcode query '" .. query .. "' --format json --limit 5 2>/dev/null")
                 local result = handle:read("*a")
                 handle:close()
-                
+
                 if result and result ~= "" then
                   local success, parsed = pcall(vim.json.decode, result)
-                  if success and parsed then
+                  if success and parsed and #parsed > 0 then
                     local context = "Here are relevant code snippets from your codebase:\n\n"
                     for i, item in ipairs(parsed) do
                       if i <= 5 then -- Limit to top 5 results
                         context = context .. string.format(
-                          "**File: %s** (similarity: %.2f)\n```%s\n%s\n```\n\n",
+                          "**File: %s** (score: %.2f)\n```%s\n%s\n```\n\n",
                           item.file or "unknown",
-                          item.similarity or 0,
+                          item.score or 0,
                           item.language or "",
                           item.content or ""
                         )
@@ -106,20 +106,20 @@ return {
               description = "Search codebase with RAG",
               opts = { contains_code = true }
             },
-            
+
             -- Quick documentation search
             ["docs"] = {
               callback = function(query)
-                local handle = io.popen("vectorcode query '" .. query .. " documentation' --output json 2>/dev/null")
+                local handle = io.popen("vectorcode query '" .. query .. " documentation' --include '*.md' --format json --limit 3 2>/dev/null")
                 local result = handle:read("*a")
                 handle:close()
-                
+
                 if result and result ~= "" then
                   local success, parsed = pcall(vim.json.decode, result)
-                  if success and parsed then
+                  if success and parsed and #parsed > 0 then
                     local context = "Documentation search results:\n\n"
                     for i, item in ipairs(parsed) do
-                      if i <= 3 and (item.file:match("%.md$") or item.file:match("README")) then
+                      if i <= 3 then
                         context = context .. string.format(
                           "**%s**\n%s\n\n",
                           item.file,
@@ -134,20 +134,20 @@ return {
               end,
               description = "Search documentation",
             },
-            
+
             -- Search for tests
             ["tests"] = {
               callback = function(query)
-                local handle = io.popen("vectorcode query '" .. query .. " test' --output json 2>/dev/null")
+                local handle = io.popen("vectorcode query '" .. query .. " test' --include '*test*' --include '*spec*' --format json --limit 3 2>/dev/null")
                 local result = handle:read("*a")
                 handle:close()
-                
+
                 if result and result ~= "" then
                   local success, parsed = pcall(vim.json.decode, result)
-                  if success and parsed then
+                  if success and parsed and #parsed > 0 then
                     local context = "Test-related code:\n\n"
                     for i, item in ipairs(parsed) do
-                      if i <= 3 and (item.file:match("test") or item.file:match("spec")) then
+                      if i <= 3 then
                         context = context .. string.format(
                           "**%s**\n```%s\n%s\n```\n\n",
                           item.file,
@@ -385,25 +385,32 @@ vim.api.nvim_create_autocmd("BufWritePost", {
   end,
 })
 
--- Show RAGS status in statusline
+-- Show RAGS status on startup
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
-    -- Check if all RAGS components are running
+    -- Check if all RAGS components are working
     vim.defer_fn(function()
-      local function check_service(url, name)
-        vim.system({ "curl", "-s", url }, {
-          on_exit = function(obj)
-            if obj.code == 0 then
-              vim.notify(name .. " is running", vim.log.levels.INFO)
-            else
-              vim.notify(name .. " is not responding", vim.log.levels.WARN)
-            end
+      -- Check Ollama
+      vim.system({ "curl", "-s", "http://127.0.0.1:11434/api/tags" }, {
+        on_exit = function(obj)
+          if obj.code == 0 then
+            vim.notify("Ollama is running", vim.log.levels.INFO)
+          else
+            vim.notify("Ollama is not responding", vim.log.levels.WARN)
           end
-        })
-      end
-      
-      check_service("http://127.0.0.1:11434/api/tags", "Ollama")
-      check_service("http://localhost:8000/api/v1/heartbeat", "ChromaDB")
+        end
+      })
+
+      -- Check VectorCode
+      vim.system({ "vectorcode", "check" }, {
+        on_exit = function(obj)
+          if obj.code == 0 then
+            vim.notify("VectorCode is working", vim.log.levels.INFO)
+          else
+            vim.notify("VectorCode is not working", vim.log.levels.WARN)
+          end
+        end
+      })
     end, 1000)
   end,
 })
@@ -434,26 +441,26 @@ else
     echo "❌ Ollama is not responding"
 fi
 
-# Test 3: Check ChromaDB connection
-echo "🗄️  Testing ChromaDB connection..."
-if curl -s http://localhost:8000/api/v1/heartbeat > /dev/null; then
-    echo "✅ ChromaDB is responding"
-else
-    echo "❌ ChromaDB is not responding"
-fi
-
-# Test 4: Check VectorCode CLI
+# Test 3: Check VectorCode CLI
 echo "🔍 Testing VectorCode CLI..."
-if vectorcode --version > /dev/null 2>&1; then
+if vectorcode version > /dev/null 2>&1; then
     echo "✅ VectorCode CLI is working"
 else
     echo "❌ VectorCode CLI is not working"
 fi
 
+# Test 4: Check VectorCode functionality
+echo "🗄️  Testing VectorCode functionality..."
+if vectorcode check > /dev/null 2>&1; then
+    echo "✅ VectorCode (with ChromaDB) is working"
+else
+    echo "❌ VectorCode functionality is not working"
+fi
+
 # Test 5: Test slash command functionality
 echo "💬 Testing slash command integration..."
 cd ~/test-vectorcode
-if vectorcode query "fibonacci" --output json > /dev/null 2>&1; then
+if vectorcode query "fibonacci" --format json > /dev/null 2>&1; then
     echo "✅ VectorCode queries are working"
 else
     echo "❌ VectorCode queries are failing"

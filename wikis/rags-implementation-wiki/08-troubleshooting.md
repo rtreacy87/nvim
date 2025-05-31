@@ -434,7 +434,7 @@ nvim -c "lua print(pcall(require, 'nvim-treesitter'))" -c "qa"
 
 ```bash
 # Test VectorCode CLI directly
-vectorcode query "test query" --output json
+vectorcode query "test query" --format json
 
 # Check CodeCompanion configuration
 nvim ~/.config/nvim/lua/plugins/codecompanion.lua
@@ -499,24 +499,25 @@ display = {
 ```bash
 # Check resource usage
 htop
-docker stats
+ps aux | grep -E "(ollama|vectorcode)"
 
 # Reduce loaded models
 export OLLAMA_MAX_LOADED_MODELS=1
 ollama serve
-
-# Limit ChromaDB memory
-docker update --memory=2g chromadb
 
 # Use smaller models
 # Edit CodeCompanion config to use codellama:7b as default
 
 # Clear VectorCode cache
 rm -rf ~/.cache/vectorcode/
+rm -rf ~/.local/share/vectorcode/chromadb/
 
-# Restart all services
-docker restart chromadb
+# Restart services
+pkill ollama
 ollama serve
+
+# Re-index if needed
+vectorcode init && vectorcode vectorise .
 ```
 
 ### Problem: Out of Disk Space
@@ -532,18 +533,22 @@ ollama serve
 # Check disk usage
 df -h
 du -sh ~/.ollama/models
-du -sh ~/.local/share/chromadb
+du -sh ~/.local/share/vectorcode/
 
 # Clean up old models
 ollama list
 ollama rm unused-model-name
 
 # Clean up old embeddings
-vectorcode cleanup --older-than 30d
+vectorcode clean
 
 # Move models to different location
 export OLLAMA_MODELS=/path/to/larger/disk
 ollama serve
+
+# Move VectorCode data
+mv ~/.local/share/vectorcode/ /path/to/larger/disk/vectorcode/
+ln -s /path/to/larger/disk/vectorcode/ ~/.local/share/vectorcode
 ```
 
 ## Recovery Procedures
@@ -562,35 +567,30 @@ echo "🔄 Resetting RAGS System..."
 
 # Stop all services
 echo "Stopping services..."
-docker stop chromadb 2>/dev/null
 pkill ollama 2>/dev/null
 
 # Backup existing data
 echo "Creating backups..."
 mkdir -p ~/rags_backup/$(date +%Y%m%d_%H%M%S)
 cp -r ~/.config/vectorcode ~/rags_backup/$(date +%Y%m%d_%H%M%S)/ 2>/dev/null
-cp -r ~/.local/share/chromadb ~/rags_backup/$(date +%Y%m%d_%H%M%S)/ 2>/dev/null
+cp -r ~/.local/share/vectorcode ~/rags_backup/$(date +%Y%m%d_%H%M%S)/ 2>/dev/null
 
 # Clean up
 echo "Cleaning up..."
-rm -rf ~/.local/share/chromadb
-docker rm chromadb 2>/dev/null
+rm -rf ~/.local/share/vectorcode/chromadb/
 
 # Restart services
 echo "Restarting services..."
-docker run -d --name chromadb -p 8000:8000 \
-  -v ~/.local/share/chromadb:/chroma/chroma \
-  chromadb/chroma:latest
-
 ollama serve &
 
 # Wait for services to start
-sleep 10
+sleep 5
 
 # Re-index current project
 echo "Re-indexing current project..."
 if [ -d .git ]; then
-    vectorcode vectorise --project_root . --recursive
+    vectorcode init
+    vectorcode vectorise .
 fi
 
 echo "✅ RAGS system reset complete!"
@@ -618,22 +618,22 @@ echo "📋 Collecting RAGS logs..."
 
 # System info
 uname -a > "$LOG_DIR/system_info.txt"
-docker version > "$LOG_DIR/docker_info.txt" 2>&1
+python3 --version > "$LOG_DIR/python_info.txt" 2>&1
 nvim --version > "$LOG_DIR/nvim_info.txt" 2>&1
 
 # Service logs
-docker logs chromadb > "$LOG_DIR/chromadb.log" 2>&1
 ollama list > "$LOG_DIR/ollama_models.txt" 2>&1
+vectorcode version > "$LOG_DIR/vectorcode_version.txt" 2>&1
 
 # Configuration files
 cp ~/.config/vectorcode/config.json "$LOG_DIR/" 2>/dev/null
 cp ~/.config/nvim/lua/plugins/codecompanion.lua "$LOG_DIR/" 2>/dev/null
 
 # Health check
-./check_rags_health.sh > "$LOG_DIR/health_check.txt" 2>&1
+vectorcode check > "$LOG_DIR/vectorcode_health.txt" 2>&1
 
 # VectorCode info
-vectorcode list-collections > "$LOG_DIR/vectorcode_collections.txt" 2>&1
+vectorcode ls > "$LOG_DIR/vectorcode_collections.txt" 2>&1
 
 echo "✅ Logs collected in $LOG_DIR/"
 echo "Share this directory when seeking help."

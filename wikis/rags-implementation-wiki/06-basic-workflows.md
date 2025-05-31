@@ -358,17 +358,20 @@ crontab -e
 0 2 * * 0 cd /path/to/project && vectorcode update
 ```
 
-### 2. Use Project-Specific Collections
+### 2. Use Multiple Projects
 
 ```bash
-# Index different parts separately
-vectorcode vectorise --project_root ./backend --collection backend
-vectorcode vectorise --project_root ./frontend --collection frontend
-vectorcode vectorise --project_root ./docs --collection docs
+# Index different projects (each gets its own collection)
+cd ~/projects/backend
+vectorcode init && vectorcode vectorise .
 
-# Query specific collections
-/codebase backend authentication
-/docs frontend setup guide
+cd ~/projects/frontend
+vectorcode init && vectorcode vectorise .
+
+cd ~/projects/docs
+vectorcode init && vectorcode vectorise .
+
+# VectorCode automatically manages separate collections per project
 ```
 
 ### 3. Create Custom Aliases
@@ -376,7 +379,7 @@ vectorcode vectorise --project_root ./docs --collection docs
 ```bash
 # Add to your shell config
 alias rags-update="vectorcode update && echo 'RAGS index updated'"
-alias rags-health="curl -s http://127.0.0.1:11434/api/tags && curl -s http://localhost:8000/api/v1/heartbeat"
+alias rags-health="vectorcode check && curl -s http://127.0.0.1:11434/api/tags"
 ```
 
 ### 4. Use Templates for Common Queries

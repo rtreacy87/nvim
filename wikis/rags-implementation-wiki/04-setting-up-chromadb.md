@@ -1,118 +1,84 @@
-# 04 - Setting up ChromaDB
+# 04 - ChromaDB Integration
 
-## What is ChromaDB?
+## What is ChromaDB in VectorCode?
 
-ChromaDB is an open-source vector database designed for AI applications. In our RAGS system, it:
+ChromaDB is the vector database backend used by VectorCode. **Important**: VectorCode uses ChromaDB as a Python library, not as a separate service. This means:
 
-- **Stores vector embeddings** of your code chunks
-- **Provides fast similarity search** across millions of vectors
-- **Persists data** between sessions
-- **Scales efficiently** with your codebase size
-- **Integrates seamlessly** with VectorCode
+- **No Docker containers needed** - ChromaDB runs embedded within VectorCode
+- **Automatic setup** - ChromaDB is installed when you install VectorCode
+- **Local file storage** - Data is stored in `~/.local/share/vectorcode/chromadb/`
+- **No network configuration** - Everything runs locally in-process
 
-## Installation Options
+## How VectorCode Uses ChromaDB
 
-### Option 1: Docker (Recommended)
+VectorCode automatically:
 
-Docker provides the easiest setup with consistent performance across platforms.
+1. **Installs ChromaDB** as a dependency when you install VectorCode
+2. **Creates a local database** in `~/.local/share/vectorcode/chromadb/`
+3. **Manages collections** automatically (one per project directory)
+4. **Handles all database operations** through the VectorCode CLI
+
+## Verification
+
+### Check ChromaDB Integration
 
 ```bash
-# Pull ChromaDB Docker image
-docker pull chromadb/chroma:latest
+# VectorCode automatically uses ChromaDB - test it works
+vectorcode check
 
-# Create persistent data directory
-mkdir -p ~/.local/share/chromadb
-
-# Run ChromaDB container
-docker run -d \
-  --name chromadb \
-  -p 8000:8000 \
-  -v ~/.local/share/chromadb:/chroma/chroma \
-  -e CHROMA_SERVER_HOST=0.0.0.0 \
-  -e CHROMA_SERVER_HTTP_PORT=8000 \
-  chromadb/chroma:latest
-
-# Verify container is running
-docker ps | grep chromadb
+# This should show ChromaDB is working
+vectorcode version
 ```
 
-### Option 2: Python Package
-
-For development or when Docker isn't available:
-
-```bash
-# Install ChromaDB Python package
-pip3 install chromadb
-
-# Create startup script
-cat > start_chromadb.py << 'EOF'
-#!/usr/bin/env python3
-import chromadb
-from chromadb.config import Settings
-
-# Start ChromaDB server
-client = chromadb.HttpClient(
-    host="localhost",
-    port=8000,
-    settings=Settings(
-        chroma_server_host="0.0.0.0",
-        chroma_server_http_port=8000,
-        persist_directory="~/.local/share/chromadb"
-    )
-)
-
-print("ChromaDB server starting on http://localhost:8000")
-print("Press Ctrl+C to stop")
-
-try:
-    # Keep server running
-    import time
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    print("\nShutting down ChromaDB server")
-EOF
-
-chmod +x start_chromadb.py
+**Expected Output:**
+```
+✅ ChromaDB connection working
+✅ Embedding function available
+VectorCode v0.x.x (with ChromaDB v0.x.x)
 ```
 
-### Option 3: System Service
+## Database Location and Management
 
-For production-like setup:
+### Default Database Location
+
+VectorCode stores ChromaDB data in:
 
 ```bash
-# Create systemd service (Linux)
-sudo tee /etc/systemd/system/chromadb.service > /dev/null << 'EOF'
-[Unit]
-Description=ChromaDB Vector Database
-After=network.target
+# Default ChromaDB data directory
+~/.local/share/vectorcode/chromadb/
 
-[Service]
-Type=simple
-User=chromadb
-Group=chromadb
-WorkingDirectory=/opt/chromadb
-ExecStart=/usr/local/bin/docker run --rm \
-  --name chromadb \
-  -p 8000:8000 \
-  -v /var/lib/chromadb:/chroma/chroma \
-  chromadb/chroma:latest
-Restart=always
-RestartSec=3
+# Check database size
+du -sh ~/.local/share/vectorcode/chromadb/
 
-[Install]
-WantedBy=multi-user.target
+# List collections (each project gets its own collection)
+ls ~/.local/share/vectorcode/chromadb/
+```
+
+### Custom Database Location
+
+You can configure a custom database location:
+
+```bash
+# Create custom config to change database location
+cat > ~/.config/vectorcode/config.json << 'EOF'
+{
+  "db_path": "/path/to/custom/chromadb/location",
+  "embedding_function": "SentenceTransformerEmbeddingFunction"
+}
 EOF
+```
 
-# Create chromadb user and directories
-sudo useradd -r -s /bin/false chromadb
-sudo mkdir -p /var/lib/chromadb
-sudo chown chromadb:chromadb /var/lib/chromadb
+### Database Backup
 
-# Enable and start service
-sudo systemctl daemon-reload
-sudo systemctl enable chromadb
-sudo systemctl start chromadb
+Since ChromaDB data is stored as files, backup is simple:
+
+```bash
+# Create backup
+cp -r ~/.local/share/vectorcode/chromadb/ ~/vectorcode-backup-$(date +%Y%m%d)
+
+# Restore from backup
+rm -rf ~/.local/share/vectorcode/chromadb/
+cp -r ~/vectorcode-backup-20241201/ ~/.local/share/vectorcode/chromadb/
 ```
 
 ## Configuration

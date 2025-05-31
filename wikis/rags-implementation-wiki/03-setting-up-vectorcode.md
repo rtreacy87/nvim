@@ -4,10 +4,11 @@
 
 VectorCode is a repository-level RAG (Retrieval-Augmented Generation) system that:
 
-- **Indexes your codebase** using semantic embeddings
+- **Indexes your codebase** using semantic embeddings with ChromaDB
 - **Enables natural language search** across all your code
 - **Provides context-aware results** for AI assistance
-- **Updates automatically** when code changes
+- **Supports multiple embedding backends** (SentenceTransformers, Ollama, OpenAI, etc.)
+- **Uses TreeSitter** for intelligent code chunking
 - **Integrates with Neovim** for seamless workflows
 
 ## Installation
@@ -17,7 +18,7 @@ VectorCode is a repository-level RAG (Retrieval-Augmented Generation) system tha
 Before installing VectorCode, ensure you have:
 
 ```bash
-# Check Python version (3.8+ required)
+# Check Python version (3.11+ required - VectorCode needs Python 3.11-3.13)
 python3 --version
 
 # Check pip/pipx availability
@@ -25,7 +26,8 @@ pip3 --version
 # OR
 pipx --version
 
-# Verify Ollama is running with embedding model
+# Optional: Verify Ollama is running if you want to use Ollama embeddings
+# (VectorCode works with SentenceTransformers by default)
 curl -X POST http://127.0.0.1:11434/api/embeddings \
   -H "Content-Type: application/json" \
   -d '{"model": "nomic-embed-text", "prompt": "test"}'
@@ -44,35 +46,8 @@ python3 -m pipx ensurepath
 pipx install vectorcode
 
 # Verify installation
-vectorcode version
+vectorcode --version
 ```
-
-
-##### Installing pipx in a virtual environment
-
-If you attempt to install pipx in a virtual environment, you may encounter the following error:
-
-```bash
-python3 -m pip install --user pipx
-ERROR: Can not perform a '--user' install. User site-packages are not visible in this virtualenv.
-```
-This error occurs because you're trying to do a `--user` install while already inside a virtual environment. The `--user` flag is meant for installing packages to your user's home directory when you don't have permission to install system-wide, but it's not compatible with virtual environments.
-
-To resolve this error, you have two options:
-
-####### Option 1: Install without the `--user` flag (recommended if you're in a virtualenv)
-```bash
-python3 -m pip install pipx
-```
-
-####### Option 2: Deactivate your virtual environment first
-```bash
-deactivate
-python3 -m pip install --user pipx
-```
-
-The error happens because virtual environments are isolated by design, and they don't see the user site-packages directory. When you're in a virtualenv, you should install packages directly without the `--user` flag since you already have write permissions within the virtual environment.
-
 
 #### Option 2: Using pip
 
@@ -87,33 +62,19 @@ source ~/.bashrc
 # Verify installation
 vectorcode --version
 ```
-**addendum**
 
-Some additional information about the following command:
+#### Option 3: CPU-only Installation
+
+If you want to avoid CUDA dependencies:
 
 ```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+# CPU-only installation
+PIP_INDEX_URL="https://download.pytorch.org/whl/cpu" \
+PIP_EXTRA_INDEX_URL="https://pypi.org/simple" \
+pipx install vectorcode
 ```
 
-This is actually two commands:
-
-1. `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc`
-   - `echo` outputs the text in quotes
-   - The text is a shell command that modifies your PATH environment variable
-   - `$HOME/.local/bin` is the directory where user-installed programs (like those installed with pip/pipx) are stored
-   - `$PATH` is your existing PATH variable
-   - The colon (`:`) separates directories in the PATH
-   - Putting `$HOME/.local/bin` before `$PATH` gives priority to user-installed programs
-   - `>>` appends the output to your `.bashrc` file without overwriting it
-
-2. `source ~/.bashrc`
-   - This reloads your `.bashrc` file to apply the changes immediately
-   - Without this, you'd need to open a new terminal to see the effect
-
-The purpose is to ensure commands installed to your user's local bin directory (like `vectorcode`) are available in your shell without needing to type the full path.
-
-
-#### Option 3: Development Installation
+#### Option 4: Development Installation
 
 ```bash
 # Clone repository for latest features
@@ -127,15 +88,44 @@ pip3 install -e .
 vectorcode --version
 ```
 
+#### Option 5: With Additional Features
+
+```bash
+# Install with LSP support for faster queries
+pipx install vectorcode[lsp]
+
+# Install with MCP (Model Context Protocol) support
+pipx install vectorcode[mcp]
+
+# Install with both
+pipx install vectorcode[lsp,mcp]
+```
+
 ## Configuration
 
-### Create Configuration Directory
+VectorCode uses ChromaDB as its vector database backend and supports multiple embedding functions. By default, it uses SentenceTransformers, but you can configure it to use Ollama, OpenAI, or other embedding providers.
+
+### Default Configuration (SentenceTransformers)
+
+VectorCode works out of the box with SentenceTransformers. No configuration file is needed for basic usage:
+
+```bash
+# Test basic functionality (uses default SentenceTransformers)
+cd ~/test-project
+vectorcode init
+vectorcode vectorise *.py
+vectorcode query "function definition"
+```
+
+### Optional: Ollama Configuration
+
+If you want to use Ollama for embeddings, create a configuration file:
 
 ```bash
 # Create VectorCode config directory
 mkdir -p ~/.config/vectorcode
 
-# Create main configuration file
+# Create configuration file for Ollama embeddings
 cat > ~/.config/vectorcode/config.json << 'EOF'
 {
   "embedding_function": "OllamaEmbeddingFunction",
@@ -143,64 +133,68 @@ cat > ~/.config/vectorcode/config.json << 'EOF'
     "url": "http://127.0.0.1:11434/api/embeddings",
     "model_name": "nomic-embed-text"
   },
-  "host": "localhost",
-  "port": 8000,
-  "chunk_size": 512,
-  "chunk_overlap": 50,
-  "supported_extensions": [
-    ".py", ".js", ".ts", ".lua", ".go", ".rs", 
-    ".java", ".cpp", ".c", ".h", ".hpp", ".cc",
-    ".md", ".txt", ".json", ".yaml", ".yml",
-    ".sh", ".bash", ".zsh", ".fish"
-  ],
-  "ignore_patterns": [
-    "node_modules/",
-    ".git/",
-    "__pycache__/",
-    "*.pyc",
-    ".DS_Store",
-    "target/",
-    "build/",
-    "dist/",
-    ".venv/",
-    "venv/"
-  ]
+  "chunk_size": 2500,
+  "overlap_ratio": 0.2
 }
 EOF
 ```
 
-This JSON configuration file for VectorCode defines how the RAG (Retrieval-Augmented Generation) system processes and indexes your code:
+### Configuration Options
 
-1. **Embedding Configuration**:
-   - `"embedding_function": "OllamaEmbeddingFunction"` - Uses Ollama's API for creating vector embeddings
-   - `"embedding_params"` - Contains settings for the embedding service:
-     - `"url": "http://127.0.0.1:11434/api/embeddings"` - Local Ollama API endpoint
-     - `"model_name": "nomic-embed-text"` - The specific embedding model to use
+VectorCode supports these configuration options:
 
-2. **Server Settings**:
-   - `"host": "localhost"` - Runs the VectorCode server locally
-   - `"port": 8000` - Uses port 8000 for the VectorCode API
+- **`embedding_function`**: Embedding backend to use
+  - `"SentenceTransformerEmbeddingFunction"` (default)
+  - `"OllamaEmbeddingFunction"`
+  - `"OpenAIEmbeddingFunction"`
+  - Others supported by ChromaDB
 
-3. **Chunking Strategy**:
-   - `"chunk_size": 512` - Breaks code into 512-character chunks
-   - `"chunk_overlap": 50` - Overlaps chunks by 50 characters to maintain context
+- **`embedding_params`**: Parameters for the embedding function
+  - For Ollama: `{"url": "...", "model_name": "..."}`
+  - For OpenAI: `{"api_key": "...", "model_name": "..."}`
 
-4. **File Filtering**:
-   - `"supported_extensions"` - List of file types to index (programming languages, config files, docs)
-   - `"ignore_patterns"` - Directories and files to exclude from indexing:
-     - Package directories (`node_modules/`, `.venv/`)
-     - Build artifacts (`target/`, `build/`, `dist/`)
-     - Version control (`.git/`)
-     - Cache files (`__pycache__/`, `*.pyc`)
-     - System files (`.DS_Store`)
+- **`db_url`**: ChromaDB server URL (default: `http://127.0.0.1:8000`)
+- **`db_path`**: Local database path (default: `~/.local/share/vectorcode/chromadb/`)
+- **`chunk_size`**: Maximum characters per chunk (default: 2500)
+- **`overlap_ratio`**: Overlap between chunks (default: 0.2)
 
-This configuration ensures VectorCode:
-1. Properly connects to your Ollama embedding service
-2. Indexes only relevant code files
-3. Ignores common directories that don't contain useful code
-4. Chunks code appropriately for semantic search
+### Advanced Configuration Example
 
-The settings balance thoroughness (including many file types) with efficiency (ignoring irrelevant directories).
+```bash
+cat > ~/.config/vectorcode/config.json5 << 'EOF'
+{
+  // VectorCode supports JSON5 syntax with comments
+  "embedding_function": "OllamaEmbeddingFunction",
+  "embedding_params": {
+    "url": "http://127.0.0.1:11434/api/embeddings",
+    "model_name": "nomic-embed-text"
+  },
+
+  // Database settings
+  "db_url": "http://127.0.0.1:8000",
+  "db_path": "~/.local/share/vectorcode/chromadb/",
+
+  // Chunking settings
+  "chunk_size": 2500,
+  "overlap_ratio": 0.2,
+
+  // Query optimization
+  "query_multiplier": 10,
+  "reranker": "CrossEncoderReranker",
+
+  // File type mapping for TreeSitter
+  "filetype_map": {
+    "php": ["^phtml$"]
+  },
+
+  // Chunk filtering
+  "chunk_filters": {
+    "python": ["^[^a-zA-Z0-9]+$"],
+    "*": ["^[^a-zA-Z0-9]+$"]
+  }
+}
+EOF
+```
 
 
 ### Project-Specific Configuration
@@ -211,14 +205,9 @@ For each project, you can create a local configuration:
 # In your project directory
 cat > .vectorcode.json << 'EOF'
 {
-  "chunk_size": 256,
-  "supported_extensions": [".py", ".md"],
-  "ignore_patterns": [
-    "tests/",
-    "docs/",
-    "*.log"
-  ],
-  "collection_name": "my-project"
+  "chunk_size": 1500,
+  "overlap_ratio": 0.15,
+  "embedding_function": "SentenceTransformerEmbeddingFunction"
 }
 EOF
 ```
@@ -227,40 +216,35 @@ EOF
 
 ### Basic Functionality Test
 
-Here are the valid commands for VectorCode installation:
-- `ls`
-- `vectorise`
-- `query`
-- `drop`
-- `hooks`
-- `init`
-- `version`
-- `check`
-- `update`
-- `clean`
-- `prompts`
-- `chunks`
+VectorCode provides these main commands:
+
+- **`vectorcode init`** - Initialize a project for VectorCode
+- **`vectorcode vectorise`** - Index files or directories
+- **`vectorcode query`** - Search the indexed codebase
+- **`vectorcode ls`** - List indexed files and collections
+- **`vectorcode drop`** - Remove collections or files
+- **`vectorcode update`** - Update existing indexes
+- **`vectorcode clean`** - Clean up unused data
+- **`vectorcode version`** - Show version information
+- **`vectorcode check`** - Check system health
 
 ```bash
 # Test VectorCode CLI
 vectorcode --help
 
-# Test connection to Ollama embeddings
+# Check version
+vectorcode version
+
+# Test basic functionality (this will work without any configuration)
 vectorcode check
-# Check configuration
-vectorcode config show
 ```
 
 **Expected Output:**
 ```
-VectorCode CLI v1.0.0
-✅ Ollama embeddings working
-✅ Configuration loaded from ~/.config/vectorcode/config.json
+VectorCode CLI v0.x.x
+✅ ChromaDB connection working
+✅ Embedding function available
 ```
- Create a simple test query to see if the system works end-to-end:
- ```bash
- vectorcode query "test query"
- ```
 
 ### Create Test Project
 
@@ -341,28 +325,35 @@ EOF
 # Navigate to your test project
 cd ~/test-vectorcode
 
-# Initialize VectorCode for this project
+# Initialize VectorCode for this project (creates .vectorcode/ directory)
 vectorcode init
 
-# Index the project
-vectorcode vectorise --project_root . --recursive
+# Index specific files
+vectorcode vectorise main.py utils.py README.md
+
+# Or index all Python files
+vectorcode vectorise *.py
+
+# Or index entire directory recursively
+vectorcode vectorise .
 
 # Verify indexing
-vectorcode list-collections
+vectorcode ls
 ```
 
 **Expected Output:**
 ```
 ✅ VectorCode initialized for project
-📁 Indexing files in .
-📝 Found 3 files to index
-🔄 Processing main.py...
-🔄 Processing utils.py...
-🔄 Processing README.md...
-✅ Indexing complete! 3 files processed.
+📁 Indexing files...
+📝 Processing main.py (3 chunks)
+📝 Processing utils.py (2 chunks)
+📝 Processing README.md (1 chunk)
+✅ Indexing complete! 3 files, 6 chunks processed.
 
-Collections:
-- test-vectorcode (3 documents, 12 chunks)
+Files in collection:
+- main.py (3 chunks)
+- utils.py (2 chunks)
+- README.md (1 chunk)
 ```
 
 ### Test Semantic Search
@@ -373,20 +364,26 @@ vectorcode query "fibonacci function"
 vectorcode query "calculate factorial"
 vectorcode query "prime number check"
 vectorcode query "mathematical functions"
+
+# Query with specific number of results
+vectorcode query "function" --limit 3
+
+# Query with similarity threshold
+vectorcode query "calculation" --threshold 0.7
 ```
 
 **Expected Output:**
 ```
-🔍 Query: "fibonacci function"
+Query: "fibonacci function"
 
-📄 main.py (similarity: 0.89)
+main.py:1-8 (score: 0.89)
 def fibonacci(n):
     """Calculate the nth Fibonacci number."""
     if n <= 1:
         return n
     return fibonacci(n-1) + fibonacci(n-2)
 
-📄 README.md (similarity: 0.72)
+README.md:5-6 (score: 0.72)
 - Fibonacci number calculation
 ```
 
@@ -394,19 +391,24 @@ def fibonacci(n):
 
 ### Multiple Project Collections
 
-```bash
-# Index different projects with specific collection names
-cd ~/projects/backend
-vectorcode vectorise --project_root . --collection backend
+VectorCode creates separate collections for each project directory:
 
-cd ~/projects/frontend  
-vectorcode vectorise --project_root . --collection frontend
+```bash
+# Index different projects (each gets its own collection)
+cd ~/projects/backend
+vectorcode init
+vectorcode vectorise .
+
+cd ~/projects/frontend
+vectorcode init
+vectorcode vectorise .
 
 cd ~/projects/docs
-vectorcode vectorise --project_root . --collection documentation
+vectorcode init
+vectorcode vectorise .
 
-# List all collections
-vectorcode list-collections
+# List all collections across projects
+vectorcode ls --all
 ```
 
 ### Incremental Updates
@@ -415,27 +417,33 @@ vectorcode list-collections
 # Update existing index (only processes changed files)
 vectorcode update
 
-# Force full re-indexing
-vectorcode vectorise --project_root . --force
+# Update specific files
+vectorcode update main.py utils.py
 
-# Update specific collection
-vectorcode update --collection backend
+# Force full re-indexing
+vectorcode vectorise . --force
+
+# Clean up removed files
+vectorcode clean
 ```
 
 ### Query Options
 
 ```bash
 # Query with specific number of results
-vectorcode query "authentication" --num-results 5
-
-# Query specific collection
-vectorcode query "user login" --collection backend
+vectorcode query "authentication" --limit 5
 
 # Query with similarity threshold
-vectorcode query "database connection" --min-similarity 0.7
+vectorcode query "database connection" --threshold 0.7
 
 # Output results as JSON
-vectorcode query "error handling" --output json
+vectorcode query "error handling" --format json
+
+# Show more context around matches
+vectorcode query "function definition" --context 3
+
+# Search in specific file types
+vectorcode query "class definition" --include "*.py"
 ```
 
 ## Performance Optimization

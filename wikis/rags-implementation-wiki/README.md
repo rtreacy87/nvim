@@ -19,21 +19,22 @@ A complete local AI development assistant that:
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Local         │    │   VectorCode     │    │   Neovim        │
 │   Codebase      │───▶│   (RAG System)   │◀───│   CodeCompanion │
-│   Documents     │    │                  │    │                 │
+│   Documents     │    │   + ChromaDB     │    │                 │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                 │                        │
                                 ▼                        ▼
                        ┌──────────────────┐    ┌─────────────────┐
-                       │   ChromaDB       │    │   Ollama        │
-                       │   (Vector Store) │    │   (Local LLM)   │
+                       │   Embeddings     │    │   Ollama        │
+                       │   (SentenceT/    │    │   (Local LLM)   │
+                       │    Ollama)       │    │                 │
                        └──────────────────┘    └─────────────────┘
 ```
 
 ### Core Components
 
 1. **Ollama** - Local LLM inference server for code generation and chat
-2. **VectorCode** - Repository indexing and semantic search system
-3. **ChromaDB** - Vector database for storing code embeddings
+2. **VectorCode** - Repository indexing and semantic search system with embedded ChromaDB
+3. **Embeddings** - SentenceTransformers (default) or Ollama for vector embeddings
 4. **CodeCompanion** - Neovim chat interface and LLM integration
 5. **Integration Layer** - Slash commands and workflow orchestration
 
@@ -55,11 +56,12 @@ A complete local AI development assistant that:
 
 Before starting, ensure you have:
 - **Neovim 0.9+** with Lazy.nvim package manager
-- **Python 3.8+** with pip/pipx
-- **Docker** (for ChromaDB)
+- **Python 3.11-3.13** with pip/pipx (VectorCode requirement)
 - **Git** for version control
 - **8GB+ RAM** recommended for local LLMs
 - **10GB+ free disk space** for models and embeddings
+
+**Note**: Docker is NOT required - VectorCode uses ChromaDB as a Python library, not a separate service.
 
 ### Time Investment
 
