@@ -44,8 +44,35 @@ python3 -m pipx ensurepath
 pipx install vectorcode
 
 # Verify installation
-vectorcode --version
+vectorcode version
 ```
+
+
+##### Installing pipx in a virtual environment
+
+If you attempt to install pipx in a virtual environment, you may encounter the following error:
+
+```bash
+python3 -m pip install --user pipx
+ERROR: Can not perform a '--user' install. User site-packages are not visible in this virtualenv.
+```
+This error occurs because you're trying to do a `--user` install while already inside a virtual environment. The `--user` flag is meant for installing packages to your user's home directory when you don't have permission to install system-wide, but it's not compatible with virtual environments.
+
+To resolve this error, you have two options:
+
+####### Option 1: Install without the `--user` flag (recommended if you're in a virtualenv)
+```bash
+python3 -m pip install pipx
+```
+
+####### Option 2: Deactivate your virtual environment first
+```bash
+deactivate
+python3 -m pip install --user pipx
+```
+
+The error happens because virtual environments are isolated by design, and they don't see the user site-packages directory. When you're in a virtualenv, you should install packages directly without the `--user` flag since you already have write permissions within the virtual environment.
+
 
 #### Option 2: Using pip
 
@@ -60,6 +87,31 @@ source ~/.bashrc
 # Verify installation
 vectorcode --version
 ```
+**addendum**
+
+Some additional information about the following command:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+```
+
+This is actually two commands:
+
+1. `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc`
+   - `echo` outputs the text in quotes
+   - The text is a shell command that modifies your PATH environment variable
+   - `$HOME/.local/bin` is the directory where user-installed programs (like those installed with pip/pipx) are stored
+   - `$PATH` is your existing PATH variable
+   - The colon (`:`) separates directories in the PATH
+   - Putting `$HOME/.local/bin` before `$PATH` gives priority to user-installed programs
+   - `>>` appends the output to your `.bashrc` file without overwriting it
+
+2. `source ~/.bashrc`
+   - This reloads your `.bashrc` file to apply the changes immediately
+   - Without this, you'd need to open a new terminal to see the effect
+
+The purpose is to ensure commands installed to your user's local bin directory (like `vectorcode`) are available in your shell without needing to type the full path.
+
 
 #### Option 3: Development Installation
 
@@ -117,6 +169,40 @@ cat > ~/.config/vectorcode/config.json << 'EOF'
 EOF
 ```
 
+This JSON configuration file for VectorCode defines how the RAG (Retrieval-Augmented Generation) system processes and indexes your code:
+
+1. **Embedding Configuration**:
+   - `"embedding_function": "OllamaEmbeddingFunction"` - Uses Ollama's API for creating vector embeddings
+   - `"embedding_params"` - Contains settings for the embedding service:
+     - `"url": "http://127.0.0.1:11434/api/embeddings"` - Local Ollama API endpoint
+     - `"model_name": "nomic-embed-text"` - The specific embedding model to use
+
+2. **Server Settings**:
+   - `"host": "localhost"` - Runs the VectorCode server locally
+   - `"port": 8000` - Uses port 8000 for the VectorCode API
+
+3. **Chunking Strategy**:
+   - `"chunk_size": 512` - Breaks code into 512-character chunks
+   - `"chunk_overlap": 50` - Overlaps chunks by 50 characters to maintain context
+
+4. **File Filtering**:
+   - `"supported_extensions"` - List of file types to index (programming languages, config files, docs)
+   - `"ignore_patterns"` - Directories and files to exclude from indexing:
+     - Package directories (`node_modules/`, `.venv/`)
+     - Build artifacts (`target/`, `build/`, `dist/`)
+     - Version control (`.git/`)
+     - Cache files (`__pycache__/`, `*.pyc`)
+     - System files (`.DS_Store`)
+
+This configuration ensures VectorCode:
+1. Properly connects to your Ollama embedding service
+2. Indexes only relevant code files
+3. Ignores common directories that don't contain useful code
+4. Chunks code appropriately for semantic search
+
+The settings balance thoroughness (including many file types) with efficiency (ignoring irrelevant directories).
+
+
 ### Project-Specific Configuration
 
 For each project, you can create a local configuration:
@@ -141,13 +227,26 @@ EOF
 
 ### Basic Functionality Test
 
+Here are the valid commands for VectorCode installation:
+- `ls`
+- `vectorise`
+- `query`
+- `drop`
+- `hooks`
+- `init`
+- `version`
+- `check`
+- `update`
+- `clean`
+- `prompts`
+- `chunks`
+
 ```bash
 # Test VectorCode CLI
 vectorcode --help
 
 # Test connection to Ollama embeddings
-vectorcode test-embeddings
-
+vectorcode check
 # Check configuration
 vectorcode config show
 ```
@@ -158,6 +257,10 @@ VectorCode CLI v1.0.0
 ✅ Ollama embeddings working
 ✅ Configuration loaded from ~/.config/vectorcode/config.json
 ```
+ Create a simple test query to see if the system works end-to-end:
+ ```bash
+ vectorcode query "test query"
+ ```
 
 ### Create Test Project
 

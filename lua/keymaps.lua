@@ -71,7 +71,7 @@ vim.keymap.set('n', '<leader>ar', ':AugmentRemoveFolder<Space>', { desc = 'Remov
 -- Insert bash code block with content from register
 vim.keymap.set('n', '<leader>icb', function()
   -- Get content from the default register
-  local content = vim.fn.getreg '"'
+  local content = vim.fn.getreg '*'
   -- Split content by newlines
   local content_lines = vim.split(content, '\n')
 
@@ -92,7 +92,7 @@ end, { desc = '[I]nsert [C]ode [B]ash' })
 
 vim.keymap.set('n', '<leader>icp', function()
   -- Get content from the default register
-  local content = vim.fn.getreg '"'
+  local content = vim.fn.getreg '*'
   -- Split content by null bytes to get proper lines
   local content_lines = vim.split(content, '\n')
   -- Create the code block with the content
