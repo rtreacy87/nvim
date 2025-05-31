@@ -71,5 +71,5 @@ vim.keymap.set('n', '<leader>icf', function()
 end, { desc = '[I]nsert [C]ontent to [F]ile' })
 
 vim.keymap.set('n', '<leader>ycb', function()
-  vim.cmd [[normal! ?```?e+1\<CR>j0v/```/-1\<CR>y]]
+  vim.cmd [[normal! ?```\+?e\<CR>j0v/```/-1\<CR>y]]
 end, { desc = '[Y]ank [C]ode [B]lock' })

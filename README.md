@@ -76,6 +76,11 @@ Modes in Neovim:
 | `<leader>ov` | Open a vertical split          |
 | `<leader>cw` | Close the current window       |
 
+
+#### Custom Keymaps
+
+A list of custom keymaps to insert and copy markdown code blocks can be found in the [Code Block Keymaps](wikis/macros/code_block_keymaps.md) wiki page. 
+
 #### File Navigation
 
 || Keybinding | Description ||
