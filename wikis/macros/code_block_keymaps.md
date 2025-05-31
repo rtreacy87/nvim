@@ -84,9 +84,6 @@ This annotation helps with:
 - Providing context about where the code lives in your project
 - Possibly enabling interactive features in your documentation system (like "click to edit this file")
 
-
-
-
 ````lua path=lua/code_block_keymaps.lua mode=EDIT
 vim.keymap.set('n', '<leader>icb', function()
   insert_code_block 'bash'
@@ -186,11 +183,23 @@ Press `<leader>cnf`, type `my_script.py`, and press Enter. A new file called `my
 **Why this is useful**: Often when writing documentation, you want to create files and then add content to them. This command sets up the file creation process.
 
 ````lua path=lua/code_block_keymaps.lua mode=EDIT
+-- Create a new file and save filename to the 'f' register
+vim.api.nvim_create_user_command('CreateNewFile', function(opts)
+  local filename = opts.args
+  -- Save filename to the 'f' register
+  vim.fn.setreg('f', filename)
+  -- Create and open the new file
+  vim.cmd('edit ' .. filename)
+  -- Optional: You can also save to buffer for immediate writing if needed
+  vim.cmd 'write'
+end, {
+  nargs = 1,
+  complete = 'file',
+  desc = 'Create a new file and save filename to f register',
+})
+
 --Create a new file with file completion
-vim.keymap.set('n', '<leader>cnf', function()
-  vim.cmd 'command! -nargs=1 -complete=file CreateNewFile !touch <args> | let @f="<args>"'
-  vim.cmd 'CreateNewFile '
-end, { desc = '[C]reate [N]ew [F]ile' })
+vim.keymap.set('n', '<leader>cnf', ':CreateNewFile ', { desc = '[C]reate [N]ew [F]ile' })
 ````
 
 ### 5. Insert Content to File (`<leader>icf`)
@@ -213,11 +222,27 @@ end, { desc = '[C]reate [N]ew [F]ile' })
 ````lua path=lua/code_block_keymaps.lua mode=EDIT
 --Insert content to file
 -- Appends content from register f to a specified file
-vim.keymap.set('n', '<leader>icf', function()
-  local content = vim.fn.getreg 'f'
-  vim.cmd('command! -nargs=1 -complete=file AddContentToFile !echo "' .. content .. '" >> <args>')
-  vim.cmd 'AddContentToFile '
-end, { desc = '[I]nsert [C]ontent to [F]ile' })
+-- Define the command once (put this in your config, not in the keymap)
+vim.api.nvim_create_user_command('AddContentToFile', function(opts)
+  local content = vim.fn.getreg '+' -- Get content from + register (clipboard)
+  local filename = vim.fn.getreg 'f' -- Get filename from f register
+  if filename == '' then
+    vim.notify('No filename found in f register', vim.log.levels.ERROR)
+    return
+  end
+  -- Use Vim's writefile function instead of shell command
+  local lines = vim.split(content, '\n')
+  vim.fn.writefile(lines, filename, 'a') -- 'a' flag appends to file
+  vim.fn.writefile({ '' }, filename, 'a') -- Add a newlines
+  vim.notify('Content appended to ' .. filename)
+end, {
+  nargs = 0,
+  desc = 'Add content from + register to file path stored in f register',
+})
+
+
+-- Then your keymap becomes:
+vim.keymap.set('n', '<leader>icf', ':AddContentToFile<CR>', { desc = '[I]nsert [C]ontent to [F]ile' })
 ````
 
 ### 6. Copy Code Block Content (`<leader>ycb`)
@@ -249,30 +274,64 @@ x = 5
 --Yank code block
 -- Copies the content of a markdown code block (without the fences)
 vim.keymap.set('n', '<leader>ycb', function()
-  vim.cmd [[normal! ?```\+?e\<CR>j0v/```/-1\<CR>y]]
+  -- Find the start of the code block (backward search for ```)
+  local start_line = vim.fn.search('```\\+', 'bn')
+  if start_line == 0 then
+    return
+  end
+  -- Find the end of the code block (forward search for ```)
+  local end_line = vim.fn.search('```', 'n')
+  if end_line == 0 then
+    return
+  end
+  -- Yank the content between the markers (excluding the markers)
+  local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line - 1, false)
+  if #lines > 0 then
+    -- Remove the first line if it contains the opening fence with language
+    table.remove(lines, 1)
+    -- Join the lines and set to register
+    local content = table.concat(lines, '\n')
+    vim.fn.setreg('+', content)
+    vim.notify 'Code block content copied to clipboard'
+  end
 end, { desc = '[Y]ank [C]ode [B]lock' })
 ````
 
 **How this works step by step**:
-1. Search backward for the opening code fence (```)
-2. Move to the line after it (where the actual code starts)
-3. Start visual mode at the beginning of that line
-4. Search forward for the closing code fence
-5. Move to the line before it (where the actual code ends)
-6. Copy (yank) the selected text
+1. `vim.keymap.set('n', '<leader>ycb', function()` - Creates a key mapping in normal mode ('n') for the key sequence `<leader>ycb` that executes the following function.
 
-This executes a series of Vim normal mode commands to select and yank (copy) the content inside a Markdown code block:
+2. `local start_line = vim.fn.search('```\\+', 'bn')` - Searches backward ('b') for one or more backticks ('```\\+') without moving the cursor ('n') and returns the line number where found.
 
-1. `?```\+?` - Search backward for one or more backticks (matches both ``` and ````)
-2. `e` - Move to the end of the found pattern
-3. `\<CR>` - Press Enter to complete the search
-4. `j` - Move down one line (to the first line of actual code)
-5. `0` - Move to the beginning of that line
-6. `v` - Enter visual mode (start selection)
-7. `/```/` - Search forward for the closing code fence
-8. `-1` - Move up one line (to the last line of actual code)
-9. `\<CR>` - Press Enter to complete the search
-10. `y` - Yank (copy) the selected text
+3. `if start_line == 0 then return end` - If no start marker is found (search returns 0), exit the function.
+
+4. `local end_line = vim.fn.search('```', 'n')` - Searches forward for the closing backticks ('```') without moving the cursor ('n') and returns the line number.
+
+5. `if end_line == 0 then return end` - If no end marker is found, exit the function.
+
+6. `local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line - 1, false)` - Gets all lines between the markers (excluding the markers themselves) from the current buffer (0).
+
+In the line `local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line - 1, false)`, the `false` parameter refers to the `strict_indexing` option of the `nvim_buf_get_lines` function.
+
+Here's what it means:
+
+- When `strict_indexing` is set to `false`, the function will silently adjust out-of-bounds indices. This means if the requested line range goes beyond the buffer boundaries, Neovim will automatically adjust the range to fit within the buffer instead of throwing an error.
+
+- If it were set to `true`, the function would throw an error if the requested line indices are out of bounds.
+
+By using `false` here, the code is being more forgiving - if the code block happens to be at the very beginning or end of the file, the function will still work correctly without raising errors, simply adjusting the range to what's available in the buffer.
+
+7. `if #lines > 0 then` - Checks if any lines were retrieved.
+
+8. `table.remove(lines, 1)` - Removes the first line from the array, which typically contains the opening fence with language identifier.
+
+9. `local content = table.concat(lines, '\n')` - Joins all remaining lines with newline characters.
+
+10. `vim.fn.setreg('+', content)` - Copies the content to the system clipboard ('+' register).
+
+11. `vim.notify 'Code block content copied to clipboard'` - Shows a notification that the operation was successful.
+
+12. `end, { desc = '[Y]ank [C]ode [B]lock' })` - Closes the function and adds a description for the key mapping.
+
 
 The command effectively:
 1. Finds the start of a code block

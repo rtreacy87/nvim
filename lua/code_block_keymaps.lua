@@ -58,18 +58,64 @@ vim.keymap.set('n', '<leader>scp', function()
   split_code_block 'python'
 end, { desc = '[S]plit [C]ode [P]ython' })
 
---Create a new file with file completion
-vim.keymap.set('n', '<leader>cnf', function()
-  vim.cmd 'command! -nargs=1 -complete=file CreateNewFile !touch <args> | let @f="<args>"'
-  vim.cmd 'CreateNewFile '
-end, { desc = '[C]reate [N]ew [F]ile' })
+-- Create a new file and save filename to the 'f' register
+vim.api.nvim_create_user_command('CreateNewFile', function(opts)
+  local filename = opts.args
+  -- Save filename to the 'f' register
+  vim.fn.setreg('f', filename)
+  -- Create and open the new file
+  vim.cmd('edit ' .. filename)
+  -- Optional: You can also save to buffer for immediate writing if needed
+  vim.cmd 'write'
+end, {
+  nargs = 1,
+  complete = 'file',
+  desc = 'Create a new file and save filename to f register',
+})
 
-vim.keymap.set('n', '<leader>icf', function()
-  local content = vim.fn.getreg 'f'
-  vim.cmd('command! -nargs=1 -complete=file AddContentToFile !echo "' .. content .. '" >> <args>')
-  vim.cmd 'AddContentToFile '
-end, { desc = '[I]nsert [C]ontent to [F]ile' })
+--Create a new file with file completion
+vim.keymap.set('n', '<leader>cnf', ':CreateNewFile ', { desc = '[C]reate [N]ew [F]ile' })
+
+-- Define the command once (put this in your config, not in the keymap)
+vim.api.nvim_create_user_command('AddContentToFile', function(opts)
+  local content = vim.fn.getreg '+' -- Get content from + register (clipboard)
+  local filename = vim.fn.getreg 'f' -- Get filename from f register
+  if filename == '' then
+    vim.notify('No filename found in f register', vim.log.levels.ERROR)
+    return
+  end
+  -- Use Vim's writefile function instead of shell command
+  local lines = vim.split(content, '\n')
+  vim.fn.writefile(lines, filename, 'a') -- 'a' flag appends to file
+  vim.fn.writefile({ '' }, filename, 'a') -- Add a newlines
+  vim.notify('Content appended to ' .. filename)
+end, {
+  nargs = 0,
+  desc = 'Add content from + register to file path stored in f register',
+})
+
+-- Then your keymap becomes:
+vim.keymap.set('n', '<leader>icf', ':AddContentToFile<CR>', { desc = '[I]nsert [C]ontent to [F]ile' })
 
 vim.keymap.set('n', '<leader>ycb', function()
-  vim.cmd [[normal! ?```\+?e\<CR>j0v/```/-1\<CR>y]]
+  -- Find the start of the code block (backward search for ```)
+  local start_line = vim.fn.search('```\\+', 'bn')
+  if start_line == 0 then
+    return
+  end
+  -- Find the end of the code block (forward search for ```)
+  local end_line = vim.fn.search('```', 'n')
+  if end_line == 0 then
+    return
+  end
+  -- Yank the content between the markers (excluding the markers)
+  local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line - 1, false)
+  if #lines > 0 then
+    -- Remove the first line if it contains the opening fence with language
+    table.remove(lines, 1)
+    -- Join the lines and set to register
+    local content = table.concat(lines, '\n')
+    vim.fn.setreg('+', content)
+    vim.notify 'Code block content copied to clipboard'
+  end
 end, { desc = '[Y]ank [C]ode [B]lock' })
