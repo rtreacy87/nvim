@@ -37,16 +37,16 @@ curl -X POST http://127.0.0.1:11434/api/embeddings \
 
 #### Installation Options Comparison
 
-| Feature | Option 1: pipx | Option 2: pip | Option 3: CPU-only | Option 4: Development | Option 5: Additional Features |
-|---------|---------------|--------------|-------------------|---------------------|----------------------------|
-| **Installation Method** | pipx | pip | pipx with CPU flags | Git + pip (editable) | pipx with extras |
-| **Isolation** | ✅ Isolated environment | ❌ User Python environment | ✅ Isolated environment | ❌ Development environment | ✅ Isolated environment |
-| **CUDA Support** | ✅ Default | ✅ Default | ❌ CPU only | ✅ Default | ✅ Default |
-| **LSP Support** | ❌ Not included | ❌ Not included | ❌ Not included | ❌ Not included | ✅ Optional |
-| **MCP Support** | ❌ Not included | ❌ Not included | ❌ Not included | ❌ Not included | ✅ Optional |
-| **Latest Features** | ❌ Release version | ❌ Release version | ❌ Release version | ✅ Latest code | ❌ Release version |
-| **Ease of Updates** | ✅ Easy (`pipx upgrade`) | ⚠️ Moderate | ✅ Easy (with flags) | ⚠️ Git pull required | ✅ Easy (`pipx upgrade`) |
-| **Best For** | Most users | Simple setup | Limited GPU resources | Contributors/developers | Advanced features |
+| Feature                 | Option 1: pipx           | Option 2: pip              | Option 3: CPU-only      | Option 4: Development      | Option 5: Additional Features |
+|-------------------------|--------------------------|----------------------------|-------------------------|----------------------------|-------------------------------|
+| **Installation Method** | pipx                     | pip                        | pipx with CPU flags     | Git + pip (editable)       | pipx with extras              |
+| **Isolation**           | ✅ Isolated environment  | ❌ User Python environment | ✅ Isolated environment | ❌ Development environment | ✅ Isolated environment       |
+| **CUDA Support**        | ✅ Default               | ✅ Default                 | ❌ CPU only             | ✅ Default                 | ✅ Default                    |
+| **LSP Support**         | ❌ Not included          | ❌ Not included            | ❌ Not included         | ❌ Not included            | ✅ Optional                   |
+| **MCP Support**         | ❌ Not included          | ❌ Not included            | ❌ Not included         | ❌ Not included            | ✅ Optional                   |
+| **Latest Features**     | ❌ Release version       | ❌ Release version         | ❌ Release version      | ✅ Latest code             | ❌ Release version            |
+| **Ease of Updates**     | ✅ Easy (`pipx upgrade`) | ⚠️ Moderate                | ✅ Easy (with flags)    | ⚠️ Git pull required       | ✅ Easy (`pipx upgrade`)      |
+| **Best For**            | Most users               | Simple setup               | Limited GPU resources   | Contributors/developers    | Advanced features             |
 
 **Notes:**
 - Option 1 (pipx) is recommended for most users due to environment isolation
@@ -65,7 +65,14 @@ python3 -m pipx ensurepath
 pipx install vectorcode
 
 # Verify installation
-vectorcode --version
+vectorcode version
+```
+You should see a warning about deprecated parameters, but the version number indicates successful installation:
+
+```bash
+vectorcode version
+WARNING: vectorcode.cli_utils : "host" and "port" are deprecated and will be removed in 0.7.0. Use "db_url" (eg. http://localhost:8000).
+0.6.10
 ```
 
 #### Option 2: Using pip
@@ -145,8 +152,7 @@ If you want to use Ollama for embeddings, create a configuration file:
 mkdir -p ~/.config/vectorcode
 
 # Create configuration file for Ollama embeddings
-cat > ~/.config/vectorcode/config.json << 'EOF'
-{
+cat > ~/.config/vectorcode/config.json << 'EOF' {
   "embedding_function": "OllamaEmbeddingFunction",
   "embedding_params": {
     "url": "http://127.0.0.1:11434/api/embeddings",
@@ -157,6 +163,139 @@ cat > ~/.config/vectorcode/config.json << 'EOF'
 }
 EOF
 ```
+### Optional: GitHub Copilot Configuration
+
+If you prefer to use GitHub Copilot instead of Ollama for code assistance:
+
+```bash
+# Install Copilot.vim plugin in your Neovim configuration
+# Add to your plugin manager (example using lazy.nvim)
+cat > ~/.config/nvim/lua/plugins/copilot.lua << 'EOF'
+return {
+  "github/copilot.vim",
+  config = function()
+    -- Enable Copilot for specific filetypes
+    vim.g.copilot_filetypes = {
+      ["*"] = true,
+    }
+    -- Optional: Set keybindings
+    vim.g.copilot_no_tab_map = true
+    vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { expr = true, silent = true })
+  end,
+}
+EOF
+```
+If you're using GitHub Copilot instead of Ollama, you don't need to change your VectorCode configuration for embeddings. VectorCode and Copilot serve different purposes in this setup:
+
+1. VectorCode will still handle your codebase indexing and RAG capabilities
+2. Copilot will handle code completions and suggestions
+
+You can continue using the default SentenceTransformers embeddings for VectorCode, which doesn't require any special configuration:
+
+````json path=~/.config/vectorcode/config.json mode=EDIT
+{
+  "embedding_function": "SentenceTransformerEmbeddingFunction",
+  "chunk_size": 2500,
+  "overlap_ratio": 0.2
+}
+````
+
+Or if you prefer, you can still use Ollama just for embeddings while using Copilot for completions:
+
+````json path=~/.config/vectorcode/config.json mode=EDIT
+{
+  "embedding_function": "OllamaEmbeddingFunction",
+  "embedding_params": {
+    "url": "http://127.0.0.1:11434/api/embeddings",
+    "model_name": "nomic-embed-text"
+  },
+  "chunk_size": 2500,
+  "overlap_ratio": 0.2
+}
+````
+
+The key point is that VectorCode's configuration is independent of your code completion tool choice. You'll configure Copilot separately through its Neovim plugin as shown in the previous examples.
+
+### Ollama Embeddings vs SentenceTransformer Embeddings
+
+| Feature            | Ollama Embeddings                                   | SentenceTransformer Embeddings                       |
+|--------------------|-----------------------------------------------------|------------------------------------------------------|
+| **Implementation** | Uses Ollama API with models like `nomic-embed-text` | Python library using Hugging Face models             |
+| **Installation**   | Requires Ollama server running                      | Included with VectorCode, no external service needed |
+| **Offline Usage**  | Requires local Ollama server                        | Works completely offline                             |
+| **Resource Usage** | Moderate (274MB for `nomic-embed-text`)             | Lightweight, runs in Python process                  |
+| **Speed**          | Depends on Ollama server performance                | Generally fast, optimized for CPU                    |
+| **Quality**        | High quality with models like `nomic-embed-text`    | Good quality with models like `all-MiniLM-L6-v2`     |
+| **Customization**  | Can switch between different Ollama models          | Can use different SentenceTransformer models         |
+| **Dependencies**   | Requires Ollama installation and setup              | Built-in to VectorCode                               |
+| **Configuration**  | Requires explicit configuration in VectorCode       | Default option, works out of the box                 |
+| **Consistency**    | Depends on Ollama server availability               | More consistent as it's built-in                     |
+| **Integration**    | Requires network calls (even if local)              | Direct in-process calls                              |
+
+#### Key Considerations
+
+1. **Simplicity**: SentenceTransformer is the simpler option as it's built-in and requires no additional setup.
+
+2. **Performance**: Both options provide good embedding quality, with Ollama potentially offering more advanced models.
+
+3. **Dependencies**: SentenceTransformer eliminates the need for running Ollama if you're only using it for embeddings.
+
+4. **Resource Management**: If you're already running Ollama for other purposes, using it for embeddings consolidates resource usage.
+
+5. **Setup Effort**: SentenceTransformer works out of the box, while Ollama requires setting up and maintaining the Ollama server.
+
+For most users who are using GitHub Copilot for code completion, the SentenceTransformer option is simpler and more straightforward since you don't need to run Ollama at all.
+
+Note: GitHub Copilot requires a subscription and authentication. VectorCode will still be used for codebase search, while Copilot provides the code completion and generation features.
+
+### Copilot vs Ollama: Comparison (Enterprise Focus)
+
+| Feature                    | GitHub Copilot (Enterprise)                        | Ollama                                         |
+|----------------------------|----------------------------------------------------|------------------------------------------------|
+| **Hosting**                | Cloud-based with enterprise controls               | Self-hosted, runs locally                      |
+| **Privacy**                | Enterprise data policies, optional IP indemnity    | All processing happens locally                 |
+| **Cost**                   | Enterprise subscription ($19-39/user/month)        | Free, open-source                              |
+| **Compliance**             | SOC 2, GDPR compliant, audit logs                  | Depends on self-hosted implementation          |
+| **Model Quality**          | High-quality, trained on vast GitHub data          | Varies by model, generally good with CodeLlama |
+| **Speed**                  | Very fast responses with enterprise SLAs           | Depends on local hardware, typically slower    |
+| **Resource Usage**         | Minimal local resources                            | 2-8GB RAM per model, high CPU/GPU usage        |
+| **Internet Requirement**   | Requires internet connection                       | Works offline after model download             |
+| **Integration**            | Enterprise IDE integrations, admin controls        | Requires more configuration with CodeCompanion |
+| **Customization**          | Enterprise policy controls, blocking capabilities  | Highly customizable (models, parameters, etc.) |
+| **Team Management**        | Centralized license management, usage analytics    | Manual setup per developer                     |
+| **Security**               | Enterprise-grade security, vulnerability filtering | Security depends on local implementation       |
+| **Support**                | Enterprise support with SLAs                       | Community support only                         |
+| **Codebase Understanding** | No direct codebase understanding                   | Works with VectorCode for codebase RAG         |
+
+## Key Enterprise Considerations
+
+1. **Governance**: Copilot Enterprise offers centralized management, policy controls, and usage analytics.
+
+2. **Security**: Enterprise version includes vulnerability filtering and compliance certifications.
+
+3. **Support**: Dedicated enterprise support with SLAs vs. community support for Ollama.
+
+4. **Total Cost**: Higher subscription cost but potentially lower infrastructure and maintenance costs compared to self-hosting Ollama at scale.
+
+5. **Deployment**: Standardized deployment across teams vs. individual developer setups with Ollama.
+
+You can absolutely use the standard GitHub Copilot plugin alongside VectorCode for a hybrid approach that gives you the best of both worlds:
+
+1. **Standard Copilot Plugin**: You can use the regular Copilot.vim plugin for code completions and suggestions.
+
+2. **VectorCode for RAG**: VectorCode will still work perfectly for indexing your codebase locally and providing RAG capabilities.
+
+This hybrid approach offers several benefits:
+
+- **Cloud-based completions**: Get Copilot's high-quality completions without the resource usage of running models locally
+- **Local codebase understanding**: VectorCode provides project-specific context through its RAG system
+- **Privacy control**: Your codebase index stays local while only small code snippets go to Copilot
+- **Lower resource usage**: No need to run large LLMs locally for completions
+
+You would configure Copilot for completions and use VectorCode's query capabilities through CodeCompanion's slash commands to search your codebase. This gives you Copilot's powerful completions with the added context awareness of a local RAG system.
+
+The standard Copilot plugin is much more affordable ($10/month) than the enterprise version while still providing excellent code completion capabilities.
+
 
 ### Configuration Options
 
@@ -215,7 +354,6 @@ cat > ~/.config/vectorcode/config.json5 << 'EOF'
 EOF
 ```
 
-
 ### Project-Specific Configuration
 
 For each project, you can create a local configuration:
@@ -230,6 +368,36 @@ cat > .vectorcode.json << 'EOF'
 }
 EOF
 ```
+# Advantages of Project-Specific VectorCode Configuration
+
+Having a separate `.vectorcode.json` configuration file for each project offers several key benefits:
+
+1. **Tailored Chunking Strategy**: Different codebases have different characteristics - you can optimize chunk size and overlap for each project's specific code style and file sizes.
+
+2. **Project-Specific Embedding Models**: You can use different embedding models for different projects based on their domain (e.g., more code-focused models for backend projects, more natural language models for documentation projects).
+
+3. **Isolation Between Projects**: Each project maintains its own configuration, preventing settings from one project affecting another.
+
+4. **Optimized Performance**: You can tune performance parameters based on each project's size and complexity:
+   - Smaller chunk sizes for dense, complex codebases
+   - Larger chunks for more documentation-heavy projects
+
+5. **Team Collaboration**: Project-specific configs can be committed to version control, ensuring all team members use the same optimized settings.
+
+6. **Resource Management**: You can allocate resources differently based on project importance:
+   - Higher quality embeddings for critical projects
+   - Faster, lighter embeddings for less critical projects
+
+7. **Query Customization**: Different projects might benefit from different query strategies (reranking, filtering, etc.).
+
+8. **File Type Handling**: Projects with different language compositions can have customized file type handling.
+
+9. **Versioning and Migration**: As your projects evolve, you can update configurations independently without affecting other projects.
+
+10. **Testing and Experimentation**: You can experiment with different configurations on specific projects without changing your global settings.
+
+This approach follows the principle of "configuration as code" - your indexing strategy becomes part of your project, ensuring consistent and optimized results for each specific codebase.
+
 
 ## Testing VectorCode Installation
 
@@ -238,7 +406,9 @@ EOF
 VectorCode provides these main commands:
 
 - **`vectorcode init`** - Initialize a project for VectorCode
+    - This will initalize a project for VectorCode. It will create a `.vectorcode` directory in the project root. This directory will contain the configuration file and other metadata.
 - **`vectorcode vectorise`** - Index files or directories
+    - This will index the files or directories. It will create a collection in the ChromaDB database. The collection will contain the vector embeddings for the files.
 - **`vectorcode query`** - Search the indexed codebase
 - **`vectorcode ls`** - List indexed files and collections
 - **`vectorcode drop`** - Remove collections or files
@@ -246,6 +416,35 @@ VectorCode provides these main commands:
 - **`vectorcode clean`** - Clean up unused data
 - **`vectorcode version`** - Show version information
 - **`vectorcode check`** - Check system health
+
+Whether to include the `.vectorcode` file in `.gitignore` depends on your team's workflow and preferences:
+
+## Reasons to commit `.vectorcode` (exclude from `.gitignore`):
+
+1. **Consistent team experience**: Everyone uses the same optimized configuration
+2. **Configuration as code**: Treat indexing strategy as part of your project
+3. **Version control benefits**: Track changes to indexing strategy over time
+4. **Onboarding**: New team members get the optimal configuration automatically
+5. **Project-specific optimizations**: Ensure everyone benefits from tailored settings
+
+## Reasons to add to `.gitignore`:
+
+1. **Personal preferences**: Allow developers to customize their own indexing settings
+2. **Hardware differences**: Team members with different hardware might need different settings
+3. **Avoid conflicts**: Prevent merge conflicts on configuration changes
+4. **Local paths**: If configuration contains absolute paths specific to each developer
+5. **Different embedding models**: If team members use different local models
+
+## Recommendation:
+
+For most teams, it's better to **commit the `.vectorcode` file** (exclude from `.gitignore`) because:
+
+1. The benefits of consistent configuration usually outweigh individual preferences
+2. Most configuration options are project-specific, not developer-specific
+3. You can always override global settings in your personal VectorCode config
+
+If you do commit it, consider documenting the reasoning in your project README so team members understand why it's version controlled.
+
 
 ```bash
 # Test VectorCode CLI
@@ -544,7 +743,7 @@ fi
 
 # List collections
 echo "📋 Available collections:"
-vectorcode list-collections
+vectorcode ls
 
 echo "✅ VectorCode health check complete!"
 EOF

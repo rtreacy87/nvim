@@ -10,6 +10,79 @@ CodeCompanion is a Neovim plugin that provides an AI-powered chat interface dire
 - **Shares context** from your current buffer and viewport
 - **Enables inline assistance** for code generation and explanation
 
+## Using CodeCompanion with GitHub Copilot
+
+If you're using GitHub Copilot instead of Ollama, you can still benefit from CodeCompanion's RAG capabilities:
+
+1. **Complementary Tools**: Copilot handles code completions while CodeCompanion provides codebase search
+2. **Hybrid Approach**: Use Copilot for inline suggestions and CodeCompanion for deeper contextual queries
+3. **Configuration**: Set up CodeCompanion to use SentenceTransformer embeddings instead of Ollama
+4. **Resource Efficiency**: No need to run local LLMs, as Copilot handles the AI completions
+
+### Setting Up the Hybrid Approach
+
+```bash
+# Install both plugins
+cat > ~/.config/nvim/lua/plugins/copilot.lua << 'EOF'
+return {
+  "github/copilot.vim",
+  config = function()
+    vim.g.copilot_filetypes = { ["*"] = true }
+    vim.g.copilot_no_tab_map = true
+    vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { expr = true, silent = true })
+  end,
+}
+EOF
+
+# Configure CodeCompanion for RAG only (no LLM chat)
+cat > ~/.config/nvim/lua/plugins/codecompanion_rag.lua << 'EOF'
+return {
+  "olimorris/codecompanion.nvim",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    "nvim-treesitter/nvim-treesitter",
+  },
+  config = function()
+    require("codecompanion").setup({
+      strategies = {
+        chat = {
+          adapter = "none", -- No LLM needed when using Copilot
+          slash_commands = {
+            -- VectorCode integration for codebase search
+            ["codebase"] = {
+              callback = function(query)
+                -- Execute VectorCode query and return results
+                local handle = io.popen("vectorcode query '" .. query .. "' --format json --limit 5 2>/dev/null")
+                local result = handle:read("*a")
+                handle:close()
+                
+                -- Process results as before...
+              end,
+              description = "Search codebase with RAG",
+            },
+            -- Other slash commands remain the same...
+          }
+        }
+      },
+      display = {
+        chat = {
+          window = {
+            layout = "vertical",
+            width = 0.45,
+            height = 0.8,
+            relative = "editor",
+            border = "rounded",
+            title = "CodeCompanion RAG Search",
+          },
+          intro_message = "Using GitHub Copilot for completions. Use /codebase to search your code repository.",
+        }
+      }
+    })
+  end,
+}
+EOF
+```
+
 ## Prerequisites
 
 Before setting up CodeCompanion, ensure you have:
