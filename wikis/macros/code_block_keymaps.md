@@ -15,17 +15,20 @@ They start and end with three backticks (```) and can specify a programming lang
 
 ## Overview of Available Shortcuts
 
-| Shortcut | What It Does | When To Use |
-|----------|--------------|-------------|
-| `<leader>icb` | Insert code block with Bash content from clipboard | When you've copied Bash commands and want to paste them in a code block |
-| `<leader>icp` | Insert code block with Python content from clipboard | When you've copied Python code and want to paste it in a code block |
-| `<leader>ieb` | Insert empty Bash code block | When you want to type Bash commands from scratch |
-| `<leader>iep` | Insert empty Python code block | When you want to type Python code from scratch |
-| `<leader>scb` | Split current code block and add Bash block | When you want to separate text and add a new Bash code block |
-| `<leader>scp` | Split current code block and add Python block | When you want to separate text and add a new Python code block |
-| `<leader>cnf` | Create a new file | When you need to create a new file on your system |
-| `<leader>icf` | Insert content to file | When you want to add content to an existing file |
-| `<leader>ycb` | Copy code block content | When you want to copy just the code (without the backticks) |
+| Shortcut      | What It Does                                         | When To Use                                                             |
+|---------------|------------------------------------------------------|-------------------------------------------------------------------------|
+| `<leader>icb` | Insert code block with Bash content from clipboard   | When you've copied Bash commands and want to paste them in a code block |
+| `<leader>icp` | Insert code block with Python content from clipboard | When you've copied Python code and want to paste it in a code block     |
+| `<leader>icc` | Insert code block with C content from clipboard      | When you've copied C code and want to paste it in a code block          |
+| `<leader>ieb` | Insert empty Bash code block                         | When you want to type Bash commands from scratch                        |
+| `<leader>iep` | Insert empty Python code block                       | When you want to type Python code from scratch                          |
+| `<leader>iec` | Insert empty C code block                            | When you want to type C code from scratch                               |
+| `<leader>scb` | Split current code block and add Bash block          | When you want to separate text and add a new Bash code block            |
+| `<leader>scp` | Split current code block and add Python block        | When you want to separate text and add a new Python code block          |
+| `<leader>scc` | Split current code block and add C block             | When you want to separate text and add a new C code block               |
+| `<leader>cnf` | Create a new file                                    | When you need to create a new file on your system                       |
+| `<leader>icf` | Insert content to file                               | When you want to add content to an existing file                        |
+| `<leader>ycb` | Copy code block content                              | When you want to copy just the code (without the backticks)             |
 
 **Note**: `<leader>` is typically the space bar in most Neovim configurations, but it could be different in your setup.
 
@@ -92,6 +95,10 @@ end, { desc = '[I]nsert [C]ode [B]ash' })
 vim.keymap.set('n', '<leader>icp', function()
   insert_code_block 'python'
 end, { desc = '[I]nsert [C]ode [P]ython' })
+
+vim.keymap.set('n', '<leader>icc', function()
+  insert_code_block 'c'
+end, { desc = '[I]nsert [C]ode [C]' })
 ````
 
 ### 2. Insert Empty Code Block (`<leader>ieb` and `<leader>iep`)
@@ -128,6 +135,10 @@ end, { desc = '[I]nsert [E]mpty [B]ash' })
 vim.keymap.set('n', '<leader>iep', function()
   insert_empty_code_block 'python'
 end, { desc = '[I]nsert [E]mpty [P]ython' })
+
+vim.keymap.set('n', '<leader>iec', function()
+  insert_empty_code_block 'c'
+end, { desc = '[I]nsert [E]mpty [C]' })
 ````
 
 ### 3. Split Code Block (`<leader>scb` and `<leader>scp`)
@@ -165,6 +176,10 @@ end, { desc = '[S]plit [C]ode [B]ash' })
 vim.keymap.set('n', '<leader>scp', function()
   split_code_block 'python'
 end, { desc = '[S]plit [C]ode [P]ython' })
+
+vim.keymap.set('n', '<leader>scc', function()
+  split_code_block 'c'
+end, { desc = '[S]plit [C]ode [C]' })
 ````
 
 ### 4. Create New File (`<leader>cnf`)

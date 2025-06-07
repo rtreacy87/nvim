@@ -26,6 +26,10 @@ vim.keymap.set('n', '<leader>icp', function()
   insert_code_block 'python'
 end, { desc = '[I]nsert [C]ode [P]ython' })
 
+vim.keymap.set('n', '<leader>icc', function()
+  insert_code_block 'c'
+end, { desc = '[I]nsert [C]ode [C]' })
+
 --Helper function to insert empty code block
 local function insert_empty_code_block(language)
   -- Create the empty code block
@@ -42,6 +46,10 @@ vim.keymap.set('n', '<leader>iep', function()
   insert_empty_code_block 'python'
 end, { desc = '[I]nsert [E]mpty [P]ython' })
 
+vim.keymap.set('n', '<leader>iec', function()
+  insert_empty_code_block 'c'
+end, { desc = '[I]nsert [E]mpty [C]' })
+
 --Helper function to split a code block
 local function split_code_block(language)
   -- Create the empty code block
@@ -57,6 +65,10 @@ end, { desc = '[S]plit [C]ode [B]ash' })
 vim.keymap.set('n', '<leader>scp', function()
   split_code_block 'python'
 end, { desc = '[S]plit [C]ode [P]ython' })
+
+vim.keymap.set('n', '<leader>scc', function()
+  split_code_block 'c'
+end, { desc = '[S]plit [C]ode [C]' })
 
 -- Create a new file and save filename to the 'f' register
 vim.api.nvim_create_user_command('CreateNewFile', function(opts)
