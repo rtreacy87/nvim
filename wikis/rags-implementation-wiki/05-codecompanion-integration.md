@@ -52,7 +52,7 @@ return {
             ["codebase"] = {
               callback = function(query)
                 -- Execute VectorCode query and return results
-                local handle = io.popen("vectorcode query '" .. query .. "' --format json --limit 5 2>/dev/null")
+                local handle = io.popen("vectorcode query '" .. query .. "' --pipe -n 5 2>/dev/null")
                 local result = handle:read("*a")
                 handle:close()
                 
@@ -88,20 +88,36 @@ EOF
 Before setting up CodeCompanion, ensure you have:
 
 ```bash
-# Verify Neovim version (0.9+ required)
+# Verify Neovim version (0.10+ required, 0.11+ recommended for VectorCode)
 nvim --version | head -1
 
 # Check if Lazy.nvim is installed
 ls ~/.config/nvim/lua/ | grep lazy
 
-# Verify Ollama is running
+# Verify Ollama is running and accessible
 curl -s http://127.0.0.1:11434/api/tags
+
+# Install CodeLlama models (recommended for code editing)
+ollama pull codellama:7b     # For fast inline completions
+ollama pull codellama:13b    # For detailed chat discussions
+
+# Test Ollama chat endpoint (CodeCompanion uses this)
+curl -X POST http://127.0.0.1:11434/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"model": "codellama:13b", "messages": [{"role": "user", "content": "hello"}], "stream": false}'
 
 # Verify VectorCode is working
 vectorcode --version
 
-# Verify ChromaDB is running
+# Check VectorCode CLI functionality
+vectorcode check
+
+# Verify ChromaDB is running (if using)
 curl -s http://localhost:8000/api/v1/heartbeat
+
+# Check required dependencies
+nvim --headless -c "lua print('Plenary available:', pcall(require, 'plenary'))" -c "qa"
+nvim --headless -c "lua print('Treesitter available:', pcall(require, 'nvim-treesitter'))" -c "qa"
 ```
 
 ## Installation
@@ -118,17 +134,51 @@ return {
   dependencies = {
     "nvim-lua/plenary.nvim",
     "nvim-treesitter/nvim-treesitter",
-    "nvim-telescope/telescope.nvim", -- Optional
-    "hrsh7th/nvim-cmp", -- Optional
+    "stevearc/dressing.nvim", -- Improves UI
   },
   config = function()
     require("codecompanion").setup({
+      adapters = {
+        ollama = function()
+          return require("codecompanion.adapters").extend("ollama", {
+            name = "ollama",
+            url = "http://127.0.0.1:11434",
+            headers = {
+              ["Content-Type"] = "application/json",
+            },
+            parameters = {
+              sync = true,
+            },
+            chat = {
+              model = "codellama:13b",              -- Larger model for detailed conversations
+              temperature = 0.2,                   -- More focused for code discussions
+              top_p = 0.95,
+              top_k = 40,                          -- Broader vocabulary for explanations
+              num_ctx = 16384,                     -- Large context for code understanding
+              num_predict = -1,                    -- Unlimited output length for detailed responses
+              repeat_penalty = 1.1,                -- Prevent repetitive explanations
+              seed = -1,                           -- Random seed for varied responses
+              stop = { "<|endoftext|>", "<|im_end|>" },
+            },
+            inline = {
+              model = "codellama:7b",               -- Faster model for quick completions
+              temperature = 0.1,                   -- Very focused for code generation
+              top_p = 0.9,
+              top_k = 20,                          -- Focused vocabulary for precision
+              num_ctx = 8192,                      -- Smaller context for speed
+              num_predict = 256,                   -- Limit completion length
+              repeat_penalty = 1.05,               -- Light penalty for code patterns
+              seed = -1,                           -- Random seed
+            },
+          })
+        end,
+      },
       strategies = {
         chat = {
           adapter = "ollama",
           roles = {
-            llm = "CodeLlama",
-            user = "Developer"
+            llm = "Assistant",
+            user = "User"
           },
           variables = {
             ["buffer"] = {
@@ -152,7 +202,7 @@ return {
             ["codebase"] = {
               callback = function(query)
                 -- Execute VectorCode query and return results
-                local handle = io.popen("vectorcode query '" .. query .. "' --format json --limit 5 2>/dev/null")
+                local handle = io.popen("vectorcode query '" .. query .. "' --pipe -n 5 2>/dev/null")
                 local result = handle:read("*a")
                 handle:close()
 
@@ -183,7 +233,7 @@ return {
             -- Quick documentation search
             ["docs"] = {
               callback = function(query)
-                local handle = io.popen("vectorcode query '" .. query .. " documentation' --include '*.md' --format json --limit 3 2>/dev/null")
+                local handle = io.popen("vectorcode query '" .. query .. " documentation' --include '*.md' --pipe -n 3 2>/dev/null")
                 local result = handle:read("*a")
                 handle:close()
 
@@ -211,7 +261,7 @@ return {
             -- Search for tests
             ["tests"] = {
               callback = function(query)
-                local handle = io.popen("vectorcode query '" .. query .. " test' --include '*test*' --include '*spec*' --format json --limit 3 2>/dev/null")
+                local handle = io.popen("vectorcode query '" .. query .. " test' --include '*test*' --include '*spec*' --pipe -n 3 2>/dev/null")
                 local result = handle:read("*a")
                 handle:close()
 
@@ -303,34 +353,53 @@ Create the VectorCode Neovim plugin configuration:
 cat > ~/.config/nvim/lua/plugins/vectorcode.lua << 'EOF'
 return {
   "Davidyz/VectorCode",
-  version = "*",
-  build = "pipx upgrade vectorcode",
+  version = "<0.7.0", -- Pin to compatible version
+  build = function()
+    -- Ensure VectorCode CLI is up to date
+    vim.fn.system("pipx upgrade vectorcode || pip install --upgrade vectorcode")
+  end,
   dependencies = { "nvim-lua/plenary.nvim" },
   cmd = "VectorCode",
   config = function()
     require("vectorcode").setup({
-      -- Automatically register buffers for async caching
-      auto_register = true,
+      -- Number of query results to return
+      n_query = 5,
       
-      -- Update embeddings on startup
-      update = false,
+      -- Show notifications for operations
+      notify = true,
       
-      -- Start LSP server for fast queries
-      lsp = true,
+      -- Timeout for VectorCode operations (milliseconds)
+      timeout_ms = 10000,
       
-      -- Async options for cached queries
+      -- Async options for automatic operations
       async_opts = {
-        auto_register = true,
-        update = false,
-        lsp = true
-      },
-      
-      -- CLI integration
-      cli = {
-        binary = "vectorcode",
-        timeout = 10000, -- 10 seconds
+        -- Events that trigger auto-registration
+        events = { "BufWritePost", "InsertEnter", "BufReadPost" },
+        -- Number of results for async queries
+        n_query = 3
       }
     })
+    
+    -- Health check command
+    vim.api.nvim_create_user_command("VectorCodeHealth", function()
+      local health = {}
+      
+      -- Check CLI availability
+      local cli_ok = vim.fn.executable("vectorcode") == 1
+      table.insert(health, string.format("CLI available: %s", cli_ok and "✅" or "❌"))
+      
+      -- Check CLI version
+      if cli_ok then
+        local version = vim.fn.system("vectorcode --version 2>/dev/null"):gsub("\n", "")
+        table.insert(health, string.format("CLI version: %s", version))
+      end
+      
+      -- Check VectorCode functionality
+      local check_ok = vim.fn.system("vectorcode check 2>/dev/null"):find("working") ~= nil
+      table.insert(health, string.format("VectorCode functional: %s", check_ok and "✅" or "❌"))
+      
+      vim.notify(table.concat(health, "\n"), vim.log.levels.INFO, { title = "VectorCode Health" })
+    end, { desc = "Check VectorCode health" })
   end,
 }
 EOF
@@ -344,6 +413,22 @@ nvim -c "Lazy sync" -c "qa"
 
 # Or manually in Neovim
 # :Lazy sync
+```
+
+### Verify Installation
+
+After installing, verify everything is working:
+
+```bash
+# Check plugin installation
+nvim --headless -c "lua print('CodeCompanion:', pcall(require, 'codecompanion'))" -c "qa"
+nvim --headless -c "lua print('VectorCode:', pcall(require, 'vectorcode'))" -c "qa"
+
+# Test CodeCompanion health
+nvim -c "checkhealth codecompanion" -c "qa"
+
+# Test VectorCode health (after opening Neovim)
+# :VectorCodeHealth
 ```
 
 ## Configuration
@@ -725,6 +810,157 @@ M.custom_slash_commands = {
 
 return M
 EOF
+```
+
+## Troubleshooting
+
+### Common CodeCompanion Issues
+
+**Issue**: "Adapter 'ollama' not found"
+```bash
+# Check if Ollama is running
+curl -s http://127.0.0.1:11434/api/tags
+
+# Test Ollama chat endpoint
+curl -X POST http://127.0.0.1:11434/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama3.2", "messages": [{"role": "user", "content": "test"}], "stream": false}'
+
+# Verify model is available
+ollama list | grep llama3.2
+ollama pull llama3.2  # If not available
+```
+
+**Issue**: "VectorCode slash commands not working"
+```bash
+# Check VectorCode CLI
+vectorcode --version
+vectorcode check
+
+# Test structured output
+vectorcode query "test" --pipe
+
+# Check if project is initialized
+vectorcode ls
+```
+
+**Issue**: "Slow or hanging responses"
+```bash
+# Check model size (smaller models are faster)
+ollama list
+
+# Try lighter models for testing
+ollama pull llama3.2:1b  # Very fast
+ollama pull llama3.2:3b  # Balanced
+
+# Update CodeCompanion config to use lighter model
+# Change "llama3.2:latest" to "llama3.2:3b" in configuration
+```
+
+**Issue**: "Connection timeout or refused"
+```bash
+# Check Ollama service status
+pgrep ollama
+systemctl status ollama  # If using systemctl
+
+# Restart Ollama
+ollama serve
+
+# Check firewall/ports
+netstat -tlnp | grep 11434
+```
+
+### Health Check Script
+
+Create a comprehensive health check:
+
+```bash
+cat > check_codecompanion_health.sh << 'EOF'
+#!/bin/bash
+
+echo "🏥 CodeCompanion + RAGS Health Check"
+echo "=================================="
+
+# Check Neovim version
+echo "📋 Neovim version:"
+nvim --version | head -1
+
+# Check plugin loading
+echo -e "\n📦 Plugin loading:"
+nvim --headless -c "lua 
+local function check_plugin(name, module)
+  local ok, _ = pcall(require, module)
+  print(name .. ': ' .. (ok and '✅ loaded' or '❌ failed'))
+end
+
+check_plugin('CodeCompanion', 'codecompanion')
+check_plugin('VectorCode', 'vectorcode')
+check_plugin('Plenary', 'plenary')
+check_plugin('Treesitter', 'nvim-treesitter')
+" -c "qa" 2>/dev/null
+
+# Check Ollama
+echo -e "\n🤖 Ollama status:"
+if curl -s http://127.0.0.1:11434/api/tags > /dev/null; then
+    echo "✅ Ollama is running"
+    echo "📊 Available models:"
+    ollama list | grep -E "(llama|codellama)" | head -3
+else
+    echo "❌ Ollama is not responding"
+fi
+
+# Check VectorCode
+echo -e "\n🔍 VectorCode status:"
+if command -v vectorcode > /dev/null; then
+    echo "✅ VectorCode CLI available"
+    echo "📋 Version: $(vectorcode --version 2>/dev/null || echo 'Unknown')"
+    
+    if vectorcode check > /dev/null 2>&1; then
+        echo "✅ VectorCode functionality working"
+    else
+        echo "❌ VectorCode functionality issues"
+    fi
+else
+    echo "❌ VectorCode CLI not found"
+fi
+
+# Check ChromaDB (if using)
+echo -e "\n🗄️  ChromaDB status:"
+if curl -s http://localhost:8000/api/v1/heartbeat > /dev/null; then
+    echo "✅ ChromaDB is running"
+else
+    echo "❌ ChromaDB not responding (may be using local storage)"
+fi
+
+echo -e "\n✅ Health check complete!"
+echo "ℹ️  For detailed diagnostics, run ':checkhealth codecompanion' in Neovim"
+EOF
+
+chmod +x check_codecompanion_health.sh
+./check_codecompanion_health.sh
+```
+
+### Debug Mode
+
+Enable debug logging for troubleshooting:
+
+```lua
+-- Add to CodeCompanion config for detailed logging
+require("codecompanion").setup({
+  opts = {
+    log_level = "DEBUG", -- or "TRACE" for maximum detail
+  },
+  -- ... rest of config
+})
+```
+
+Then check logs:
+```bash
+# View CodeCompanion logs
+tail -f ~/.local/state/nvim/codecompanion.log
+
+# Or in Neovim
+# :CodeCompanionLog
 ```
 
 ## What's Next?

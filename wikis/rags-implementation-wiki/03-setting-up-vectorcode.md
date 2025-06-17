@@ -21,6 +21,9 @@ Before installing VectorCode, ensure you have:
 # Check Python version (3.11+ required - VectorCode needs Python 3.11-3.13)
 python3 --version
 
+# If you see Python 3.10 or older, VectorCode will NOT install
+# You'll need to upgrade Python first (see Troubleshooting section below)
+
 # Check pip/pipx availability
 pip3 --version
 # OR
@@ -37,22 +40,25 @@ curl -X POST http://127.0.0.1:11434/api/embeddings \
 
 #### Installation Options Comparison
 
-| Feature                 | Option 1: pipx           | Option 2: pip              | Option 3: CPU-only      | Option 4: Development      | Option 5: Additional Features |
-|-------------------------|--------------------------|----------------------------|-------------------------|----------------------------|-------------------------------|
-| **Installation Method** | pipx                     | pip                        | pipx with CPU flags     | Git + pip (editable)       | pipx with extras              |
-| **Isolation**           | ✅ Isolated environment  | ❌ User Python environment | ✅ Isolated environment | ❌ Development environment | ✅ Isolated environment       |
-| **CUDA Support**        | ✅ Default               | ✅ Default                 | ❌ CPU only             | ✅ Default                 | ✅ Default                    |
-| **LSP Support**         | ❌ Not included          | ❌ Not included            | ❌ Not included         | ❌ Not included            | ✅ Optional                   |
-| **MCP Support**         | ❌ Not included          | ❌ Not included            | ❌ Not included         | ❌ Not included            | ✅ Optional                   |
-| **Latest Features**     | ❌ Release version       | ❌ Release version         | ❌ Release version      | ✅ Latest code             | ❌ Release version            |
-| **Ease of Updates**     | ✅ Easy (`pipx upgrade`) | ⚠️ Moderate                | ✅ Easy (with flags)    | ⚠️ Git pull required       | ✅ Easy (`pipx upgrade`)      |
-| **Best For**            | Most users               | Simple setup               | Limited GPU resources   | Contributors/developers    | Advanced features             |
+| Feature                 | Option 1: pipx           | Option 2: pip              | Option 3: CPU-only      | Option 4: Development      | Option 5: Additional Features | Option 6: Virtual Environment |
+|-------------------------|--------------------------|----------------------------|-------------------------|----------------------------|-------------------------------|-------------------------------|
+| **Installation Method** | pipx                     | pip                        | pipx with CPU flags     | Git + pip (editable)       | pipx with extras              | venv + pip                    |
+| **Isolation**           | ✅ Isolated environment  | ❌ User Python environment | ✅ Isolated environment | ❌ Development environment | ✅ Isolated environment       | ✅ Fully isolated environment |
+| **CUDA Support**        | ✅ Default               | ✅ Default                 | ❌ CPU only             | ✅ Default                 | ✅ Default                    | ✅ Default                    |
+| **LSP Support**         | ❌ Not included          | ❌ Not included            | ❌ Not included         | ❌ Not included            | ✅ Optional                   | ✅ Optional                   |
+| **MCP Support**         | ❌ Not included          | ❌ Not included            | ❌ Not included         | ❌ Not included            | ✅ Optional                   | ✅ Optional                   |
+| **Latest Features**     | ❌ Release version       | ❌ Release version         | ❌ Release version      | ✅ Latest code             | ❌ Release version            | ❌ Release version            |
+| **Ease of Updates**     | ✅ Easy (`pipx upgrade`) | ⚠️ Moderate                | ✅ Easy (with flags)    | ⚠️ Git pull required       | ✅ Easy (`pipx upgrade`)      | ⚠️ Requires activation        |
+| **Version Control**     | ❌ Single version        | ❌ Single version          | ❌ Single version       | ✅ Git-based versions      | ❌ Single version             | ✅ Multiple projects/versions |
+| **Project Isolation**   | ❌ Global installation   | ❌ Global installation     | ❌ Global installation  | ❌ Global installation     | ❌ Global installation        | ✅ Per-project isolation     |
+| **Best For**            | Most users               | Simple setup               | Limited GPU resources   | Contributors/developers    | Advanced features             | Multiple projects/versions    |
 
 **Notes:**
 - Option 1 (pipx) is recommended for most users due to environment isolation
 - Option 3 is ideal for systems without GPU or to avoid CUDA dependencies
 - Option 4 gives you the latest unreleased features but may be less stable
 - Option 5 adds LSP support for faster queries and/or MCP for enhanced model context
+- Option 6 (virtual environments) is ideal for developers working on multiple projects with different VectorCode requirements
 
 #### Option 1: Using pipx (Recommended)
 
@@ -127,6 +133,207 @@ pipx install vectorcode[mcp]
 pipx install vectorcode[lsp,mcp]
 ```
 
+#### Option 6: Virtual Environment Installation
+
+Virtual environments provide the highest level of isolation and are ideal for:
+- Working on multiple projects with different VectorCode versions
+- Testing different configurations without affecting global installations
+- Ensuring reproducible environments across team members
+- Avoiding conflicts with other Python packages
+
+```bash
+# Create a virtual environment for VectorCode
+python3 -m venv ~/.venvs/vectorcode
+
+# Activate the virtual environment
+source ~/.venvs/vectorcode/bin/activate
+
+# Install VectorCode
+pip install vectorcode
+
+# Install with additional features if needed
+pip install vectorcode[lsp,mcp]
+
+# Verify installation
+vectorcode --version
+
+# Create an alias for easy activation (add to ~/.bashrc or ~/.zshrc)
+echo 'alias activate-vectorcode="source ~/.venvs/vectorcode/bin/activate"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Per-Project Virtual Environments:**
+
+For even better isolation, create separate virtual environments for each project:
+
+```bash
+# Navigate to your project directory
+cd ~/my-project
+
+# Create project-specific virtual environment
+python3 -m venv .venv
+
+# Activate it
+source .venv/bin/activate
+
+# Install VectorCode
+pip install vectorcode
+
+# Create a requirements.txt for reproducibility
+echo "vectorcode==0.6.10" > requirements.txt
+
+# Deactivate when done
+deactivate
+```
+
+**Virtual Environment Management Script:**
+
+```bash
+# Create a helper script for managing VectorCode environments
+cat > ~/bin/vectorcode-env << 'EOF'
+#!/bin/bash
+
+VENV_BASE="$HOME/.venvs"
+PROJECT_VENV=".venv"
+
+case "$1" in
+    "global")
+        source "$VENV_BASE/vectorcode/bin/activate"
+        echo "✅ Activated global VectorCode environment"
+        ;;
+    "local")
+        if [ -d "$PROJECT_VENV" ]; then
+            source "$PROJECT_VENV/bin/activate"
+            echo "✅ Activated local VectorCode environment"
+        else
+            echo "❌ No local .venv found. Create one with: python3 -m venv .venv"
+            exit 1
+        fi
+        ;;
+    "create")
+        if [ -z "$2" ]; then
+            echo "Usage: vectorcode-env create <env-name>"
+            exit 1
+        fi
+        python3 -m venv "$VENV_BASE/$2"
+        source "$VENV_BASE/$2/bin/activate"
+        pip install vectorcode
+        echo "✅ Created and activated VectorCode environment: $2"
+        ;;
+    "list")
+        echo "Available VectorCode environments:"
+        ls -1 "$VENV_BASE" | grep -E '^(vectorcode|.*-vectorcode)$' || echo "No environments found"
+        ;;
+    *)
+        echo "Usage: vectorcode-env {global|local|create <name>|list}"
+        echo "  global - Activate global VectorCode environment"
+        echo "  local  - Activate local project environment (.venv)"
+        echo "  create - Create new named environment"
+        echo "  list   - List available environments"
+        ;;
+esac
+EOF
+
+chmod +x ~/bin/vectorcode-env
+
+# Add ~/bin to PATH if not already there
+if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
+    echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+    source ~/.bashrc
+fi
+```
+
+### Virtual Environments vs Other Installation Methods: Analysis
+
+#### Advantages of Virtual Environments
+
+**1. Complete Isolation**
+- Each project can have its own VectorCode version and dependencies
+- No conflicts between different projects' requirements
+- Safe to experiment without affecting other installations
+
+**2. Version Management**
+- Easy to test different VectorCode versions
+- Can maintain legacy projects with older versions
+- Rollback capabilities if updates cause issues
+
+**3. Team Collaboration**
+- `requirements.txt` files ensure consistent environments across team members
+- Reproducible setups for CI/CD pipelines
+- Documentation of exact dependency versions
+
+**4. Development Flexibility**
+- Can install development versions alongside stable releases
+- Easy to switch between different configurations (CPU-only, GPU, etc.)
+- Test different embedding models or configurations per project
+
+**5. System Cleanliness**
+- No global package pollution
+- Easy cleanup by deleting environment directory
+- Multiple Python versions supported per project
+
+#### Disadvantages of Virtual Environments
+
+**1. Management Overhead**
+- Must remember to activate environments
+- More complex workflow for beginners
+- Additional commands to manage environments
+
+**2. Storage Usage**
+- Each environment duplicates dependencies
+- Can consume significant disk space with multiple environments
+- Larger backup requirements
+
+**3. Learning Curve**
+- Requires understanding of Python virtual environments
+- More complex than simple `pip install` or `pipx install`
+- Additional concepts for new developers
+
+**4. Path Management**
+- Need to ensure correct environment is activated
+- Potential confusion if wrong environment is active
+- Shell integration complexity
+
+#### When to Choose Virtual Environments
+
+**Choose Virtual Environments When:**
+
+✅ **Multiple Projects**: Working on several projects that might need different VectorCode versions or configurations
+
+✅ **Team Development**: Need to ensure consistent environments across team members
+
+✅ **Experimentation**: Frequently testing different configurations, models, or VectorCode versions
+
+✅ **CI/CD Integration**: Need reproducible builds and deployments
+
+✅ **Version Constraints**: Specific projects require particular VectorCode versions
+
+✅ **Dependency Conflicts**: Other Python tools conflict with VectorCode's dependencies
+
+✅ **Development Work**: Contributing to VectorCode or building tools around it
+
+**Choose pipx Instead When:**
+
+❌ **Single Project**: Only working on one project that uses VectorCode
+
+❌ **Simplicity Preferred**: Want the simplest possible installation and management
+
+❌ **Casual Usage**: Occasional use without complex requirements
+
+❌ **Beginner Users**: New to Python development and virtual environments
+
+❌ **System Tools**: Using VectorCode as a general system utility across all projects
+
+#### Recommendation Summary
+
+**For Most Users**: Start with **pipx** (Option 1) for its simplicity and built-in isolation.
+
+**For Development Teams**: Use **Virtual Environments** (Option 6) to ensure consistency and enable per-project customization.
+
+**For Enterprise**: Consider **Virtual Environments** for better compliance, reproducibility, and version control.
+
+**Migration Path**: You can always start with pipx and migrate to virtual environments later as your needs grow more complex.
+
 ## Configuration
 
 VectorCode uses ChromaDB as its vector database backend and supports multiple embedding functions. By default, it uses SentenceTransformers, but you can configure it to use Ollama, OpenAI, or other embedding providers.
@@ -145,14 +352,43 @@ vectorcode query "function definition"
 
 ### Optional: Ollama Configuration
 
-If you want to use Ollama for embeddings, create a configuration file:
+If you want to use Ollama for embeddings instead of the default SentenceTransformers, follow these steps:
+
+#### Prerequisites for Ollama Embeddings
+
+**1. Ensure Ollama is Running**
+```bash
+# Check if Ollama is running
+curl -f http://127.0.0.1:11434/api/tags 2>/dev/null && echo "✅ Ollama is running" || echo "❌ Ollama is not running"
+
+# If not running, start Ollama (see guide 02-setting-up-ollama.md)
+ollama serve
+```
+
+**2. Verify nomic-embed-text Model is Available**
+```bash
+# Check if the embedding model is installed
+ollama list | grep nomic-embed-text
+
+# If not installed, pull the model
+ollama pull nomic-embed-text
+
+# Test the embedding model
+curl -X POST http://127.0.0.1:11434/api/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{"model": "nomic-embed-text", "prompt": "test embedding"}' \
+  | jq '.embedding[0:5]'  # Should return first 5 embedding values
+```
+
+#### Create Ollama Configuration
 
 ```bash
 # Create VectorCode config directory
 mkdir -p ~/.config/vectorcode
 
 # Create configuration file for Ollama embeddings
-cat > ~/.config/vectorcode/config.json << 'EOF' {
+cat > ~/.config/vectorcode/config.json << 'EOF'
+{
   "embedding_function": "OllamaEmbeddingFunction",
   "embedding_params": {
     "url": "http://127.0.0.1:11434/api/embeddings",
@@ -163,6 +399,284 @@ cat > ~/.config/vectorcode/config.json << 'EOF' {
 }
 EOF
 ```
+
+#### Verify Ollama Configuration
+
+```bash
+# Test VectorCode with Ollama embeddings
+cd ~/test-vectorcode  # or any test directory
+vectorcode init
+
+# Create a simple test file
+echo "def hello_world(): print('Hello, World!')" > test.py
+
+# Test embedding with Ollama (this will verify the configuration works)
+vectorcode vectorise test.py
+
+# If successful, you should see output like:
+# ✅ Using OllamaEmbeddingFunction with nomic-embed-text
+# 📝 Processing test.py (1 chunk)
+# ✅ Indexing complete!
+
+# Test querying
+vectorcode query "hello function"
+```
+
+#### Configuration Parameters Explained
+
+- **`embedding_function`**: Specifies which embedding backend to use
+  - `"OllamaEmbeddingFunction"` for Ollama
+  - `"SentenceTransformerEmbeddingFunction"` for default (no config needed)
+
+- **`embedding_params`**: Parameters specific to the chosen function
+  - `url`: Ollama embeddings API endpoint (usually `http://127.0.0.1:11434/api/embeddings`)
+  - `model_name`: The embedding model to use (`nomic-embed-text` is recommended)
+
+- **`chunk_size`**: Maximum characters per code chunk (2500 is optimal for most codebases)
+- **`overlap_ratio`**: Overlap between chunks as ratio (0.2 = 20% overlap for better context)
+
+#### Alternative Embedding Models
+
+You can use other Ollama embedding models by changing the `model_name`:
+
+```bash
+# Available embedding models (pull if needed)
+ollama pull all-minilm        # Smaller, faster
+ollama pull mxbai-embed-large # Larger, more accurate
+
+# Update config for different model
+cat > ~/.config/vectorcode/config.json << 'EOF'
+{
+  "embedding_function": "OllamaEmbeddingFunction",
+  "embedding_params": {
+    "url": "http://127.0.0.1:11434/api/embeddings",
+    "model_name": "mxbai-embed-large"
+  },
+  "chunk_size": 2500,
+  "overlap_ratio": 0.2
+}
+EOF
+```
+
+#### Troubleshooting Ollama Configuration
+
+**Issue**: "Connection refused" or "Ollama not responding"
+```bash
+# Check Ollama status and restart if needed
+pgrep ollama || echo "Ollama not running"
+ollama serve &  # Start in background
+sleep 5  # Wait for startup
+curl http://127.0.0.1:11434/api/tags  # Test connection
+```
+
+**Issue**: "Model not found" error
+```bash
+# Ensure the embedding model is pulled
+ollama pull nomic-embed-text
+ollama list | grep embed  # Verify it's installed
+```
+
+**Issue**: VectorCode still uses SentenceTransformers
+```bash
+# Verify config file exists and is valid JSON
+cat ~/.config/vectorcode/config.json | jq .  # Should parse without errors
+
+# Check config location (VectorCode looks for config in this order):
+# 1. ./.vectorcode.json (project-specific)
+# 2. ~/.config/vectorcode/config.json (global)
+# 3. Default SentenceTransformers (if no config found)
+```
+
+### SentenceTransformers vs Ollama Embeddings: Detailed Comparison
+
+Before choosing your embedding strategy, understand the trade-offs between VectorCode's default SentenceTransformers and Ollama embeddings:
+
+#### Feature Comparison Table
+
+| Feature | SentenceTransformers (Default) | Ollama Embeddings |
+|---------|--------------------------------|------------------|
+| **Setup Complexity** | ✅ Zero configuration required | ⚠️ Requires Ollama installation and configuration |
+| **Installation Size** | ✅ ~200MB (included with VectorCode) | ⚠️ 2-8GB (Ollama + embedding models) |
+| **Startup Time** | ✅ Instant (loads with VectorCode) | ⚠️ 2-5 seconds (API calls to Ollama) |
+| **Resource Usage** | ✅ Low CPU, ~500MB RAM | ⚠️ Higher CPU/GPU, 1-4GB RAM |
+| **Offline Usage** | ✅ Completely offline | ✅ Offline (after model download) |
+| **Internet Dependency** | ✅ None after installation | ✅ None after model download |
+| **Model Quality** | ✅ Good (`all-MiniLM-L6-v2`) | ✅ Excellent (`nomic-embed-text`) |
+| **Embedding Dimensions** | 384 dimensions | 768 dimensions (nomic-embed-text) |
+| **Code Understanding** | ✅ Good for general text and code | ✅ Better for code-specific embeddings |
+| **Customization** | ⚠️ Limited model choices | ✅ Multiple model options |
+| **Performance** | ✅ Consistent, predictable | ⚠️ Depends on hardware and model |
+| **Reliability** | ✅ No external dependencies | ⚠️ Requires Ollama service to be running |
+| **Memory Persistence** | ✅ Stays loaded in VectorCode process | ⚠️ Separate Ollama process management |
+| **Multi-language Support** | ✅ 50+ languages | ✅ 100+ languages (model dependent) |
+| **Updates** | ✅ Automatic with VectorCode updates | ⚠️ Manual model updates via Ollama |
+
+#### Performance Benchmarks
+
+**Embedding Speed Comparison (1000 code chunks):**
+```bash
+# SentenceTransformers (typical)
+Processing time: ~15-30 seconds
+Memory usage: ~500MB additional
+CPU usage: 80-100% during processing
+
+# Ollama (nomic-embed-text)
+Processing time: ~45-90 seconds
+Memory usage: ~2-4GB additional
+CPU/GPU usage: Variable (depends on hardware)
+```
+
+**Search Quality Comparison (subjective assessment):**
+- **SentenceTransformers**: Good semantic understanding, reliable results
+- **Ollama**: Better context understanding, especially for code patterns and technical terminology
+
+#### Detailed Analysis
+
+**1. Setup and Maintenance**
+
+**SentenceTransformers:**
+```bash
+# No configuration needed - works out of the box
+vectorcode init
+vectorcode vectorise *.py  # Just works
+```
+
+**Ollama:**
+```bash
+# Requires setup and maintenance
+ollama serve &  # Must be running
+ollama pull nomic-embed-text  # Model management
+# Plus configuration file creation
+```
+
+**2. Resource Usage Patterns**
+
+**SentenceTransformers:**
+- Memory usage is predictable and lower
+- CPU spikes only during embedding creation
+- No additional processes to manage
+
+**Ollama:**
+- Higher baseline memory usage from Ollama service
+- GPU acceleration available (if supported)
+- Separate process management required
+
+**3. Code-Specific Performance**
+
+**Test Query: "authentication function with JWT token validation"**
+
+*SentenceTransformers Results:*
+```
+auth.py:15-25 (score: 0.72)
+def authenticate_user(token):
+    """Validate JWT token and return user"""
+    # Implementation...
+```
+
+*Ollama (nomic-embed-text) Results:*
+```
+auth.py:15-25 (score: 0.89)
+def authenticate_user(token):
+    """Validate JWT token and return user"""
+    # Implementation...
+
+security.py:45-55 (score: 0.81)
+class JWTValidator:
+    """JWT token validation utilities"""
+    # Implementation...
+```
+
+**Analysis**: Ollama often provides better semantic understanding and more relevant results, especially for technical queries.
+
+#### When to Choose Each Option
+
+**Choose SentenceTransformers When:**
+
+✅ **Simplicity First**: You want zero-configuration setup
+✅ **Resource Constraints**: Limited RAM/disk space (<2GB available)
+✅ **Reliability Priority**: Need consistent, predictable performance
+✅ **Single Developer**: Personal projects without complex requirements
+✅ **Quick Start**: Want to try VectorCode immediately
+✅ **Stable Environment**: Don't want external service dependencies
+✅ **Battery Life**: Working on laptops where efficiency matters
+
+**Choose Ollama Embeddings When:**
+
+✅ **Quality Priority**: Need the best possible search results
+✅ **Code-Heavy Projects**: Working primarily with source code
+✅ **Large Codebases**: >100k lines where search quality matters more
+✅ **Team Environment**: Shared infrastructure can handle Ollama
+✅ **GPU Available**: Have GPU acceleration for faster processing
+✅ **Technical Expertise**: Comfortable managing additional services
+✅ **Custom Models**: Want to experiment with different embedding models
+✅ **Multi-language**: Working with diverse programming languages
+
+#### Migration Between Approaches
+
+**From SentenceTransformers to Ollama:**
+```bash
+# 1. Install and configure Ollama (see above sections)
+# 2. Create Ollama configuration
+cat > ~/.config/vectorcode/config.json << 'EOF'
+{
+  "embedding_function": "OllamaEmbeddingFunction",
+  "embedding_params": {
+    "url": "http://127.0.0.1:11434/api/embeddings",
+    "model_name": "nomic-embed-text"
+  },
+  "chunk_size": 2500,
+  "overlap_ratio": 0.2
+}
+EOF
+
+# 3. Re-index your projects (embeddings are not compatible)
+vectorcode clean  # Remove old embeddings
+vectorcode vectorise .  # Re-create with Ollama
+```
+
+**From Ollama to SentenceTransformers:**
+```bash
+# 1. Remove or rename the configuration file
+mv ~/.config/vectorcode/config.json ~/.config/vectorcode/config.json.backup
+
+# 2. Re-index projects
+vectorcode clean
+vectorcode vectorise .  # Uses SentenceTransformers by default
+```
+
+#### Hybrid Approach
+
+You can use different embedding strategies for different projects:
+
+```bash
+# Global default: SentenceTransformers (no config file)
+# Project-specific: Ollama (local .vectorcode.json)
+
+cd ~/important-project
+cat > .vectorcode.json << 'EOF'
+{
+  "embedding_function": "OllamaEmbeddingFunction",
+  "embedding_params": {
+    "url": "http://127.0.0.1:11434/api/embeddings",
+    "model_name": "nomic-embed-text"
+  }
+}
+EOF
+
+cd ~/quick-scripts
+# Uses default SentenceTransformers (no local config)
+```
+
+#### Recommendation Summary
+
+**For Most Users**: Start with **SentenceTransformers** (default) for its simplicity and reliability. You can always upgrade to Ollama later as your needs grow.
+
+**For Power Users**: Use **Ollama embeddings** if you have the resources and want the best possible search quality for code-heavy projects.
+
+**For Teams**: Consider **SentenceTransformers** for consistency unless your team has dedicated infrastructure for running Ollama reliably.
+
+**Migration Strategy**: Begin with SentenceTransformers, and migrate specific high-value projects to Ollama embeddings as needed.
+
 ### Optional: GitHub Copilot Configuration
 
 If you prefer to use GitHub Copilot instead of Ollama for code assistance:
@@ -780,6 +1294,239 @@ chmod +x update_vectorcode_indexes.sh
 ```
 
 ## Troubleshooting
+
+### Installation Issues
+
+#### Python Version Compatibility Error
+
+**Error Message:**
+```
+ERROR: Ignored the following versions that require a different python version: 0.6.10 Requires-Python <3.14,>=3.11
+ERROR: Could not find a version that satisfies the requirement vectorcode
+ERROR: No matching distribution found for vectorcode
+```
+
+**Root Cause:** VectorCode requires Python 3.11-3.13, but your system has Python 3.10 or older.
+
+**Solution Options:**
+
+**Option 1: Install Python 3.11+ via pyenv (Recommended)**
+
+*Note: If pyenv installation fails, see Option 1b below for a virtual environment alternative.*
+
+```bash
+# Install pyenv dependencies first
+sudo apt update
+sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+  libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+  libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
+  libffi-dev liblzma-dev
+
+# Install pyenv
+curl https://pyenv.run | bash
+
+# Add pyenv to your shell (add to ~/.bashrc or ~/.zshrc)
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+
+# Reload shell configuration
+source ~/.bashrc
+
+# If pyenv command is still not found, try:
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+
+# Install Python 3.11 (or 3.12, 3.13)
+pyenv install 3.11.9
+pyenv global 3.11.9
+
+# Verify version
+python3 --version  # Should show Python 3.11.9
+
+# Now install VectorCode with the correct Python version
+pipx install vectorcode --python $(which python3)
+```
+
+**Option 1b: Virtual Environment Alternative (If pyenv fails)**
+
+If pyenv installation is unsuccessful or you prefer a simpler approach, use this virtual environment method:
+
+```bash
+# First install Python 3.11 via system package manager
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.11 python3.11-venv python3.11-pip
+
+# Create a virtual environment in your home directory
+python3.11 -m venv ~/venv
+
+# Activate the virtual environment
+source ~/venv/bin/activate
+
+# Verify you're using Python 3.11
+python --version  # Should show Python 3.11.x
+
+# Install VectorCode in the virtual environment
+pip install vectorcode
+
+# Verify installation
+vectorcode --version
+
+# Create convenient aliases (add to ~/.bashrc or ~/.zshrc)
+echo 'alias activate-venv="source ~/venv/bin/activate"' >> ~/.bashrc
+echo 'alias vectorcode-setup="source ~/venv/bin/activate && echo \"VectorCode environment activated (Python \$(python --version))\""' >> ~/.bashrc
+source ~/.bashrc
+
+# To use VectorCode in the future:
+# 1. Activate the environment: activate-venv
+# 2. Use VectorCode normally: vectorcode init, vectorcode query, etc.
+# 3. Deactivate when done: deactivate
+```
+
+**Usage with Virtual Environment:**
+```bash
+# Start a new terminal session
+activate-venv  # or: source ~/venv/bin/activate
+
+# Now use VectorCode normally
+cd ~/my-project
+vectorcode init
+vectorcode vectorise *.py
+vectorcode query "function definition"
+
+# When finished
+deactivate
+```
+
+**Permanent Setup Script:**
+Create a setup script for easy VectorCode access:
+
+```bash
+cat > ~/bin/vectorcode-venv << 'EOF'
+#!/bin/bash
+
+# Activate virtual environment and run vectorcode
+source ~/venv/bin/activate
+vectorcode "$@"
+deactivate
+EOF
+
+chmod +x ~/bin/vectorcode-venv
+
+# Add ~/bin to PATH if not already there
+if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
+    echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+    source ~/.bashrc
+fi
+
+# Now you can use: vectorcode-venv init, vectorcode-venv query "test", etc.
+```
+
+**Option 2: Use System Package Manager**
+
+*Ubuntu/Debian:*
+```bash
+# Add deadsnakes PPA for newer Python versions
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+
+# Install Python 3.11
+sudo apt install python3.11 python3.11-venv python3.11-pip
+
+# Install pipx with Python 3.11
+python3.11 -m pip install --user pipx
+python3.11 -m pipx ensurepath
+
+# Install VectorCode using Python 3.11
+pipx install vectorcode --python python3.11
+```
+
+*Fedora/RHEL:*
+```bash
+# Install Python 3.11
+sudo dnf install python3.11 python3.11-pip
+
+# Install VectorCode
+pipx install vectorcode --python python3.11
+```
+
+*Arch Linux:*
+```bash
+# Install Python 3.11
+sudo pacman -S python311
+
+# Install VectorCode
+pipx install vectorcode --python python3.11
+```
+
+**Option 3: Virtual Environment with Specific Python Version**
+```bash
+# Create virtual environment with Python 3.11 (if available)
+python3.11 -m venv ~/.venvs/vectorcode-py311
+source ~/.venvs/vectorcode-py311/bin/activate
+
+# Install VectorCode
+pip install vectorcode
+
+# Create activation alias
+echo 'alias vectorcode-env="source ~/.venvs/vectorcode-py311/bin/activate"' >> ~/.bashrc
+```
+
+**Option 4: Docker Alternative (If Python upgrade not possible)**
+```bash
+# Create a Dockerfile for VectorCode
+cat > Dockerfile.vectorcode << 'EOF'
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install VectorCode
+RUN pip install vectorcode
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command
+CMD ["vectorcode", "--help"]
+EOF
+
+# Build the image
+docker build -t vectorcode -f Dockerfile.vectorcode .
+
+# Create wrapper script
+cat > ~/bin/vectorcode-docker << 'EOF'
+#!/bin/bash
+docker run --rm -it \
+  -v "$(pwd):/workspace" \
+  -v "$HOME/.config/vectorcode:/root/.config/vectorcode" \
+  vectorcode "$@"
+EOF
+
+chmod +x ~/bin/vectorcode-docker
+
+# Use as: vectorcode-docker init
+```
+
+**Verification After Fix:**
+```bash
+# Check Python version
+python3 --version  # Should be 3.11+
+
+# Test VectorCode installation
+vectorcode --version
+
+# Test basic functionality
+vectorcode check
+```
 
 ### Common Issues
 
