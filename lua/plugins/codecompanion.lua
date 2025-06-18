@@ -10,6 +10,7 @@ return {
       adapters = {
         ollama = function()
           return require('codecompanion.adapters').extend('ollama', {
+            name = 'ollama',
             env = {
               url = 'http://localhost:11434',
             },
@@ -18,6 +19,26 @@ return {
             },
             parameters = {
               sync = true,
+            },
+            schema = {
+              model = {
+                default = 'codellama:7b',
+                choices = {
+                  'codellama:7b',
+                  'codellama:13b',
+                  'llama3.1:8b',
+                  'codellama:7b-python',
+                },
+              },
+              num_ctx = {
+                default = 16384, -- Context window size
+              },
+              temperature = {
+                default = 0.1, -- Lower for more consistent code
+              },
+              top_p = {
+                default = 0.9,
+              },
             },
           })
         end,
@@ -48,6 +69,9 @@ return {
       },
       opts = {
         log_level = 'ERROR', -- Change to 'DEBUG' for troubleshooting
+        send_code = true, -- Include code context in messages
+        use_default_actions = true,
+        silence_notifications = false,
       },
     }
   end,
