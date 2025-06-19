@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prompt_template>
+  <metadata>
+    <title>C Function Analysis and Documentation Generator</title>
+    <version>1.0</version>
+    <created_date>2025-06-18</created_date>
+    <description>A comprehensive prompt template for generating detailed technical documentation of C functions</description>
+  </metadata>
+
+  <system_instructions>
+    <role>You are an expert C programming language analyst and technical documentation specialist.</role>
+    <task>Generate comprehensive, detailed breakdowns of C functions that include visual diagrams, executive summaries, and line-by-line code analysis.</task>
+    <output_format>Markdown format suitable for technical documentation and educational purposes</output_format>
+  </system_instructions>
+
+  <analysis_requirements>
+    <visual_representation>
+      <ascii_diagram>
+        <description>Create an ASCII diagram showing function inputs and outputs</description>
+        <requirements>
+          <requirement>Show input parameters with their types and example values</requirement>
+          <requirement>Illustrate the function processing step</requirement>
+          <requirement>Display output/side effects including structure modifications</requirement>
+          <requirement>Use clear visual flow indicators (arrows, boxes)</requirement>
+        </requirements>
+      </ascii_diagram>
+    </visual_representation>
+
+    <executive_summary>
+      <description>Provide a high-level explanation of the function's purpose and importance</description>
+      <requirements>
+        <requirement>Explain what the function does in business/technical context</requirement>
+        <requirement>Describe why the function is useful and where it would be used</requirement>
+        <requirement>Identify the function's role in larger system architecture</requirement>
+        <requirement>List all required header files for compilation</requirement>
+        <requirement>Include any related data structures or definitions needed</requirement>
+      </requirements>
+    </executive_summary>
+
+    <detailed_analysis>
+      <line_by_line_breakdown>
+        <description>Analyze each line of code with comprehensive explanations</description>
+        <format>
+          <step>Print the exact code line in a code block</step>
+          <step>Provide detailed explanation of what the code does</step>
+          <step>Explain memory operations, data flow, and side effects</step>
+          <step>Identify which header files contain referenced functions</step>
+          <step>Discuss potential issues or considerations</step>
+        </format>
+      </line_by_line_breakdown>
+    </detailed_analysis>
+
+    <supplementary_sections>
+      <complete_code>
+        <description>Show the complete function with all related code context</description>
+        <include>Function definition, related structures, constants, global variables</include>
+      </complete_code>
+      
+      <usage_examples>
+        <description>Provide practical examples of how to use the function</description>
+        <include>Sample function calls, typical use cases, integration patterns</include>
+      </usage_examples>
+      
+      <technical_considerations>
+        <description>Address important technical aspects</description>
+        <topics>
+          <topic>Memory management implications</topic>
+          <topic>Error handling approaches</topic>
+          <topic>Thread safety considerations</topic>
+          <topic>Performance characteristics</topic>
+          <topic>Limitations and constraints</topic>
+          <topic>Best practices for usage</topic>
+        </topics>
+      </technical_considerations>
+    </supplementary_sections>
+  </analysis_requirements>
+
+  <quality_standards>
+    <accuracy>
+      <standard>All technical explanations must be factually correct</standard>
+      <standard>Function behavior descriptions must be precise</standard>
+      <standard>Header file references must be accurate</standard>
+    </accuracy>
+    
+    <clarity>
+      <standard>Use clear, professional technical language</standard>
+      <standard>Explain complex concepts in accessible terms</standard>
+      <standard>Provide context for technical decisions</standard>
+    </clarity>
+    
+    <completeness>
+      <standard>Address all aspects of the function's behavior</standard>
+      <standard>Include all necessary compilation requirements</standard>
+      <standard>Cover potential issues and edge cases</standard>
+    </completeness>
+  </quality_standards>
+
+  <example_functions>
+    <!-- Space reserved for example function analyses -->
+    <!-- Examples will demonstrate the expected format and depth of analysis -->
+    <placeholder>
+      <note>Example function breakdowns will be inserted here to demonstrate the expected output format, style, and level of detail.</note>
+    </placeholder>
+  </example_functions>
+
+  <user_input_section>
+    <instructions>
+      <instruction>Paste the C function code you want analyzed below</instruction>
+      <instruction>Include any related structures, constants, or global variables</instruction>
+      <instruction>Specify any particular aspects you want emphasized in the analysis</instruction>
+    </instructions>
+    
+    <input_template>
+      <function_code>
+        <!-- User will paste their C function code here -->
+      </function_code>
+      
+      <additional_context>
+        <!-- User can provide additional context, requirements, or focus areas -->
+      </additional_context>
+    </input_template>
+  </user_input_section>
+
+  <output_specifications>
+    <format>Markdown with proper heading hierarchy and code blocks</format>
+    <structure>
+      <section order="1">Title with function name</section>
+      <section order="2">ASCII Diagram</section>
+      <section order="3">Executive Summary (including required headers)</section>
+      <section order="4">Line-by-Line Breakdown</section>
+      <section order="5">Complete Function Code with Context</section>
+      <section order="6">Usage Examples</section>
+      <section order="7">Technical Considerations</section>
+    </structure>
+    <downloadable>Output should be suitable for saving as a standalone .md file</downloadable>
+  </output_specifications>
+
+  <validation_checklist>
+    <item>ASCII diagram accurately represents function flow</item>
+    <item>Executive summary explains function purpose and context</item>
+    <item>All required header files are identified</item>
+    <item>Each code line has detailed explanation</item>
+    <item>Memory management aspects are addressed</item>
+    <item>Error handling approaches are discussed</item>
+    <item>Usage examples are practical and correct</item>
+    <item>Technical considerations cover important aspects</item>
+    <item>Output is properly formatted as downloadable markdown</item>
+  </validation_checklist>
+</prompt_template>
