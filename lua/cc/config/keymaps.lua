@@ -20,24 +20,6 @@ function M.setup()
     end
   end, vim.tbl_extend('force', opts, { desc = 'Function Analysis - Current function' }))
 
-  -- Code Review - Detailed review with suggestions
-  vim.keymap.set('v', '<leader>cr', function()
-    vim.cmd 'CodeCompanion Code Review'
-  end, vim.tbl_extend('force', opts, { desc = 'Code Review - Detailed analysis' }))
-
-  vim.keymap.set('n', '<leader>cr', function()
-    vim.cmd 'CodeCompanion Code Review'
-  end, vim.tbl_extend('force', opts, { desc = 'Code Review - Current selection' }))
-
-  -- Basic Explanation - Simple, quick explanation
-  vim.keymap.set('v', '<leader>ce', function()
-    vim.cmd 'CodeCompanion Explain Code'
-  end, vim.tbl_extend('force', opts, { desc = 'Explain Code - Simple explanation' }))
-
-  vim.keymap.set('n', '<leader>ce', function()
-    vim.cmd 'CodeCompanion Explain Code'
-  end, vim.tbl_extend('force', opts, { desc = 'Explain Code - Current line/selection' }))
-
   -- Additional helpful mappings
   vim.keymap.set('n', '<leader>cc', function()
     vim.cmd 'CodeCompanion'

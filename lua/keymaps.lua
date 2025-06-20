@@ -85,5 +85,5 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 --vim.keymap.set('n', '<leader>cc', '<cmd>CodeCompanionChat<cr>', { desc = 'Open CodeCompanion Chat' })
 --vim.keymap.set('v', '<leader>cc', '<cmd>CodeCompanionChat<cr>', { desc = 'Send selection to CodeCompanion' })
 --vim.keymap.set('n', '<leader>ca', '<cmd>CodeCompanionActions<cr>', { desc = 'CodeCompanion Actions' })
---vim.keymap.set('n', '<leader>ct', '<cmd>CodeCompanionChat Toggle<cr>', { desc = 'Toggle CodeCompanion' })
+vim.keymap.set('n', '<leader>ct', '<cmd>CodeCompanionChat Toggle<cr>', { desc = 'Toggle CodeCompanion' })
 --vim.keymap.set('n', '<leader>ci', '<cmd>CodeCompanion<cr>', { desc = 'Inline CodeCompanion' })
