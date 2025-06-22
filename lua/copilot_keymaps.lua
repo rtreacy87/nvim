@@ -1,0 +1,7 @@
+vim.keymap.set('n', '<leader>cpcn', ':CopilotChatReset<CR>', { desc = 'Copilot New Chat' })
+vim.keymap.set('n', '<leader>cpct', ':CopilotChatToggle<CR>', { desc = 'Copilot Toggle Chat' })
+vim.keymap.set('n', '<leader>cpcm', ':CopilotChatModels<CR>', { desc = 'Copilot Toggle Models' })
+vim.keymap.set('n', '<leader>cpcc', ':CopilotChat<CR>', { desc = 'Copilot Chat' })
+vim.keymap.set('n', '<leader>cpca', ':CopilotChatAgents<CR>', { desc = 'Copilot Agents' })
+vim.keymap.set('n', '<leader>cpco', ':CopilotChatOpen<CR>', { desc = 'Copilot Reset Open' })
+vim.keymap.set('n', '<leader>cpcp', ':CopilotChatPrompts<CR>', { desc = 'Copilot Prompts' })

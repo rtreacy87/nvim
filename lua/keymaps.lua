@@ -48,25 +48,12 @@ vim.keymap.set('n', '<leader>tm', ':TableModeToggle<CR>', { desc = '[T]able [M]o
 -- Alternative mapping for block visual mode if Ctrl+v is intercepted by the terminal
 vim.keymap.set('n', '<leader>vb', '<C-v>', { desc = 'Enter Block Visual mode' })
 
--- Send a chat message in normal mode
-vim.keymap.set('n', '<leader>ac', ':Augment chat<CR>', { desc = 'Augment Chat' })
--- Send a chat message about selected text in visual mode
-vim.keymap.set('v', '<leader>ac', ":'<,'>Augment chat<CR>", { desc = 'Augment Chat Selection' })
-
 vim.keymap.set(
   'v',
   '<leader>ad',
   ":'<,'>Augment chat Create an ascii diagram of the highlighted code.<CR>",
   { desc = 'Create an ascii diagram of the highlighted code' }
 )
--- Start a new chat conversation
-vim.keymap.set('n', '<leader>an', ':Augment chat-new<CR>', { desc = 'Augment New Chat' })
--- Toggle the chat panel visibility
-vim.keymap.set('n', '<leader>at', ':Augment chat-toggle<CR>', { desc = 'Augment Toggle Chat' })
--- Workspace management keymaps
-vim.keymap.set('n', '<leader>ap', ':AugmentProject<Space>', { desc = 'Set Augment Project' })
-vim.keymap.set('n', '<leader>aa', ':AugmentAddFolder<Space>', { desc = 'Add Augment Folder' })
-vim.keymap.set('n', '<leader>ar', ':AugmentRemoveFolder<Space>', { desc = 'Remove Augment Folder' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -85,5 +72,5 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 --vim.keymap.set('n', '<leader>cc', '<cmd>CodeCompanionChat<cr>', { desc = 'Open CodeCompanion Chat' })
 --vim.keymap.set('v', '<leader>cc', '<cmd>CodeCompanionChat<cr>', { desc = 'Send selection to CodeCompanion' })
 --vim.keymap.set('n', '<leader>ca', '<cmd>CodeCompanionActions<cr>', { desc = 'CodeCompanion Actions' })
-vim.keymap.set('n', '<leader>ct', '<cmd>CodeCompanionChat Toggle<cr>', { desc = 'Toggle CodeCompanion' })
+--vim.keymap.set('n', '<leader>ct', '<cmd>CodeCompanionChat Toggle<cr>', { desc = 'Toggle CodeCompanion' })
 --vim.keymap.set('n', '<leader>ci', '<cmd>CodeCompanion<cr>', { desc = 'Inline CodeCompanion' })

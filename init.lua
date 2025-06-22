@@ -5,6 +5,7 @@ vim.g.have_nerd_font = true
 require 'options'
 require 'keymaps'
 require 'code_block_keymaps'
+require 'copilot_keymaps'
 require 'lazy-install'
 -- Load all plugins from the lua/plugins directory
 require('lazy').setup('plugins', {
