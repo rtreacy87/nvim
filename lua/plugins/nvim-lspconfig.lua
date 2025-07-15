@@ -161,7 +161,21 @@ return { -- LSP Configuration & Plugins
       --    https://github.com/pmizio/typescript-tools.nvim
       --
       -- But for many setups, the LSP (`tsserver`) will work just fine
-      tsserver = {},
+      --tsserver = {},
+      vtsls = {
+        -- modern TypeScript LSP
+        filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx' },
+        settings = {
+          vtsls = {
+            enableMoveToFileCodeAction = true,
+            autoUseWorkspaceTsdk = true,
+          },
+          typescript = {
+            updateImportsOnFileMove = { enabled = 'always' },
+            suggest = { completeFunctionCalls = true },
+          },
+        },
+      },
       cssls = {},
       html = {},
       lua_ls = {
