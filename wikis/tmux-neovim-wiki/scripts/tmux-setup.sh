@@ -120,9 +120,9 @@ bind-key -T copy-mode-vi L send-keys -X end-of-line
 bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-selection-and-cancel
 # Copy to system clipboard (choose based on your system)
 # WSL
- bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "clip.exe"
+# bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "clip.exe"
 # Linux (X11)
-# bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard"
+ bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard"
 
 # Linux (Wayland)
 # bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy"

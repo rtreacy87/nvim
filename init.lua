@@ -7,7 +7,9 @@ require 'keymaps'
 require 'code_block_keymaps'
 require 'copilot_keymaps'
 require 'lazy-install'
--- Load all plugins from the lua/plugins directory
+if vim.fn.has 'unix' == 1 and vim.fn.has 'macunix' == 0 then
+  vim.keymap.set('i', '', '<BS>', { noremap = true }) -- Set backspace to behave like a normal backspace key
+end
 require('lazy').setup('plugins', {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
